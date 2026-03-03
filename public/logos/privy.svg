@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40" fill="none">
+  <rect x="6" y="8" width="24" height="24" rx="12" stroke="currentColor" stroke-width="2.5" fill="none"/>
+  <circle cx="18" cy="17" r="4" stroke="currentColor" stroke-width="2" fill="none"/>
+  <path d="M11 28c0-4 3.5-7 7-7s7 3 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <text x="38" y="26" font-family="system-ui, sans-serif" font-weight="600" font-size="18" fill="currentColor">Privy</text>
+</svg>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 40" fill="none">
+  <circle cx="20" cy="20" r="14" stroke="currentColor" stroke-width="2.5" fill="none"/>
+  <path d="M14 22c1.5 3 3.5 4.5 6 4.5s4.5-1.5 6-4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <circle cx="16" cy="17" r="1.5" fill="currentColor"/>
+  <circle cx="24" cy="17" r="1.5" fill="currentColor"/>
+  <text x="40" y="26" font-family="system-ui, sans-serif" font-weight="600" font-size="18" fill="currentColor">Claude</text>
+</svg>
