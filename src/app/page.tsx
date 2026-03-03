@@ -1,4 +1,5 @@
 import Navbar from "@/components/Navbar";
+import Ticker from "@/components/Ticker";
 import Hero from "@/components/Hero";
 import Partners from "@/components/Partners";
 import Features from "@/components/Features";
@@ -13,6 +14,7 @@ export default function Home() {
   return (
     <>
       <Navbar />
+      <Ticker />
       <Hero />
       <Partners />
       <Features />

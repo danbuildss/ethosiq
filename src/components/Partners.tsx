@@ -1,33 +1,33 @@
-import Image from "next/image";
-
 const partners = [
-  { name: "Ethos", logo: "/logos/ethos.svg" },
-  { name: "Bankr", logo: "/logos/bankr.svg" },
-  { name: "Base", logo: "/logos/base.svg" },
-  { name: "Privy", logo: "/logos/privy.svg" },
-  { name: "Claude", logo: "/logos/claude.svg" },
+  { name: "Ethos Network", icon: "≡" },
+  { name: "Bankr",         icon: "₿" },
+  { name: "Base",          icon: "◈" },
+  { name: "Privy",         icon: "⬡" },
+  { name: "Claude AI",     icon: "✦" },
 ];
 
 export default function Partners() {
   return (
-    <section className="border-y border-white/5 bg-dark-surface px-6 py-12">
+    <section
+      className="px-5 py-8"
+      style={{ borderBottom: "1px solid var(--border)" }}
+    >
       <div className="mx-auto max-w-5xl">
-        <p className="mb-8 text-center text-sm font-medium tracking-widest text-gray-500 uppercase">
+        <p
+          className="mb-6 text-center text-[11px] font-semibold uppercase tracking-widest"
+          style={{ color: "var(--text-3)" }}
+        >
           Powered By
         </p>
-        <div className="flex flex-wrap items-center justify-center gap-10 md:gap-16">
-          {partners.map((partner) => (
+        <div className="flex flex-wrap items-center justify-center gap-8 md:gap-14">
+          {partners.map((p) => (
             <div
-              key={partner.name}
-              className="flex items-center gap-2 text-gray-500 transition-colors hover:text-gray-300"
+              key={p.name}
+              className="flex items-center gap-2 transition-opacity hover:opacity-80"
+              style={{ color: "rgba(255,255,255,0.22)" }}
             >
-              <Image
-                src={partner.logo}
-                alt={partner.name}
-                width={100}
-                height={32}
-                className="h-8 w-auto opacity-50 grayscale transition-all hover:opacity-80 hover:grayscale-0"
-              />
+              <span className="text-xl font-bold">{p.icon}</span>
+              <span className="text-[13px] font-semibold tracking-wide">{p.name}</span>
             </div>
           ))}
         </div>

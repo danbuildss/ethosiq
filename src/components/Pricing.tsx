@@ -48,75 +48,78 @@ const plans = [
 
 export default function Pricing() {
   return (
-    <section id="pricing" className="bg-white px-6 py-20 md:py-28">
+    <section id="pricing" className="px-5 py-20 md:py-28" style={{ background: "var(--surface)", borderTop: "1px solid var(--border)" }}>
       <div className="mx-auto max-w-6xl">
-        <div className="mb-16 text-center">
-          <h2 className="font-serif text-3xl text-gray-900 md:text-5xl">
-            Simple, <span className="text-gradient italic">Transparent</span>{" "}
+        <div className="mb-12 text-center">
+          <p className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--text-3)" }}>
             Pricing
+          </p>
+          <h2 className="text-3xl md:text-5xl font-bold text-white">
+            Simple, <span style={{ color: "var(--blue)" }}>Transparent</span> Pricing
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-500">
+          <p className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed" style={{ color: "rgba(255,255,255,0.45)" }}>
             Pay with USDC, ETH, or BNKR on Base. No credit card needed.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className={`relative rounded-2xl border p-8 transition-shadow ${
-                plan.highlighted
-                  ? "border-blue-primary/30 bg-gradient-to-b from-blue-primary/5 to-green-primary/5 shadow-lg shadow-blue-primary/10"
-                  : "border-gray-200 bg-white hover:shadow-md"
-              }`}
+              className="relative rounded-xl p-7 flex flex-col"
+              style={{
+                background: plan.highlighted ? "var(--surface-2)" : "var(--bg)",
+                border: plan.highlighted ? "1px solid var(--blue)" : "1px solid var(--border)",
+              }}
             >
               {plan.highlighted && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="btn-gradient rounded-full px-4 py-1 text-xs font-semibold text-white">
+                  <span
+                    className="rounded-full px-4 py-1 text-[11px] font-bold text-white"
+                    style={{ background: "var(--blue)" }}
+                  >
                     Most Popular
                   </span>
                 </div>
               )}
 
-              <h3 className="text-lg font-bold text-gray-900">{plan.name}</h3>
-              <div className="mt-4 flex items-baseline gap-1">
-                <span className="font-serif text-4xl font-bold text-gray-900">
-                  {plan.price}
-                </span>
-                {plan.period && (
-                  <span className="text-sm text-gray-500">{plan.period}</span>
-                )}
+              <div>
+                <h3 className="text-[15px] font-semibold text-white">{plan.name}</h3>
+                <div className="mt-3 flex items-baseline gap-1">
+                  <span className="text-4xl font-bold text-white">{plan.price}</span>
+                  {plan.period && (
+                    <span className="text-sm" style={{ color: "var(--text-2)" }}>{plan.period}</span>
+                  )}
+                </div>
+                <p className="mt-1.5 text-[13px]" style={{ color: "var(--text-2)" }}>{plan.description}</p>
               </div>
-              <p className="mt-2 text-sm text-gray-500">{plan.description}</p>
 
-              <ul className="mt-8 space-y-3">
+              <ul className="mt-7 space-y-3 flex-1">
                 {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-3 text-sm">
+                  <li key={feature} className="flex items-start gap-2.5 text-[13px]">
                     <svg
-                      className="mt-0.5 h-4 w-4 shrink-0 text-green-primary"
+                      className="mt-0.5 h-4 w-4 shrink-0"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
                       strokeWidth={2.5}
+                      style={{ color: "var(--green)" }}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M4.5 12.75l6 6 9-13.5"
-                      />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                     </svg>
-                    <span className="text-gray-600">{feature}</span>
+                    <span style={{ color: "rgba(255,255,255,0.65)" }}>{feature}</span>
                   </li>
                 ))}
               </ul>
 
               <Link
                 href="/app"
-                className={`mt-8 block w-full rounded-full py-3 text-center text-sm font-semibold transition-colors ${
+                className="mt-8 block w-full rounded-lg py-2.5 text-center text-[14px] font-semibold transition-colors"
+                style={
                   plan.highlighted
-                    ? "btn-gradient text-white"
-                    : "border border-gray-200 bg-white text-gray-900 hover:border-gray-300 hover:bg-gray-50"
-                }`}
+                    ? { background: "var(--blue)", color: "white" }
+                    : { background: "var(--surface-2)", color: "rgba(255,255,255,0.7)", border: "1px solid var(--border)" }
+                }
               >
                 {plan.cta}
               </Link>

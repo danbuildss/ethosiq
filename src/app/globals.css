@@ -1,45 +1,36 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=DM+Serif+Display:ital@0;1&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 :root {
-  --dark: #070B14;
-  --dark-surface: #0D1321;
-  --dark-card: #111827;
-  --blue-primary: #3B82F6;
-  --blue-light: #60A5FA;
-  --green-primary: #10B981;
-  --green-light: #34D399;
-  --white: #FFFFFF;
-  --gray-50: #F8FAFC;
-  --gray-100: #F1F5F9;
-  --gray-200: #E2E8F0;
-  --gray-300: #CBD5E1;
-  --gray-400: #94A3B8;
-  --gray-500: #64748B;
-  --gray-600: #475569;
-  --gray-700: #334155;
-  --font-serif: 'DM Serif Display', Georgia, serif;
-  --font-sans: 'DM Sans', system-ui, sans-serif;
+  --bg: #181818;
+  --surface: #232323;
+  --surface-2: #2c2c2c;
+  --surface-3: #383838;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-2: rgba(255, 255, 255, 0.13);
+  --blue: #4B9EFF;
+  --blue-hover: #6BB5FF;
+  --blue-dim: rgba(75, 158, 255, 0.13);
+  --green: #4ade80;
+  --green-dim: rgba(74, 222, 128, 0.13);
+  --red: #f87171;
+  --red-dim: rgba(248, 113, 113, 0.13);
+  --amber: #fbbf24;
+  --text: #ffffff;
+  --text-2: #999999;
+  --text-3: #555555;
 }
 
 @theme inline {
-  --color-dark: var(--dark);
-  --color-dark-surface: var(--dark-surface);
-  --color-dark-card: var(--dark-card);
-  --color-blue-primary: var(--blue-primary);
-  --color-blue-light: var(--blue-light);
-  --color-green-primary: var(--green-primary);
-  --color-green-light: var(--green-light);
-  --color-gray-50: var(--gray-50);
-  --color-gray-100: var(--gray-100);
-  --color-gray-200: var(--gray-200);
-  --color-gray-300: var(--gray-300);
-  --color-gray-400: var(--gray-400);
-  --color-gray-500: var(--gray-500);
-  --color-gray-600: var(--gray-600);
-  --color-gray-700: var(--gray-700);
-  --font-sans: var(--font-sans);
-  --font-serif: var(--font-serif);
+  --color-e-bg: var(--bg);
+  --color-e-surface: var(--surface);
+  --color-e-surface-2: var(--surface-2);
+  --color-e-surface-3: var(--surface-3);
+  --color-e-blue: var(--blue);
+  --color-e-green: var(--green);
+  --color-e-red: var(--red);
+  --color-e-amber: var(--amber);
+  --font-sans: 'Inter', system-ui, sans-serif;
 }
 
 * {
@@ -53,53 +44,85 @@ html {
 }
 
 body {
-  font-family: var(--font-sans);
-  background: var(--dark);
-  color: var(--white);
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Dark grid texture */
-.bg-grid {
-  background-image:
-    linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
-  background-size: 60px 60px;
+/* ── Ticker marquee ── */
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.ticker-inner {
+  display: flex;
+  width: max-content;
+  animation: ticker 55s linear infinite;
+  will-change: transform;
+}
+.ticker-inner:hover {
+  animation-play-state: paused;
 }
 
-/* Gradient glow effects */
-.glow-blue-green {
-  background: radial-gradient(ellipse 600px 400px at 50% 0%, rgba(59, 130, 246, 0.15), rgba(16, 185, 129, 0.08), transparent);
+/* ── Base card ── */
+.e-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
 }
 
-.glow-bottom {
-  background: radial-gradient(ellipse 600px 300px at 50% 100%, rgba(59, 130, 246, 0.12), rgba(16, 185, 129, 0.06), transparent);
+/* ── Buttons ── */
+.btn-blue {
+  background: var(--blue);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+.btn-blue:hover { background: var(--blue-hover); }
+
+.btn-outline {
+  background: transparent;
+  color: var(--text);
+  font-weight: 500;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1px solid var(--border-2);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+.btn-outline:hover {
+  border-color: rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.04);
 }
 
-/* Glassmorphism */
-.glass {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+/* ── Score watermark ── */
+.score-watermark {
+  font-size: 8.5rem;
+  font-weight: 800;
+  color: rgba(255,255,255,0.055);
+  line-height: 1;
+  letter-spacing: -4px;
+  user-select: none;
+  pointer-events: none;
 }
 
-/* Gradient text */
-.text-gradient {
-  background: linear-gradient(135deg, var(--blue-primary), var(--green-primary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Button gradient */
-.btn-gradient {
-  background: linear-gradient(135deg, var(--blue-primary), var(--green-primary));
-  transition: all 0.3s ease;
-}
-
-.btn-gradient:hover {
-  background: linear-gradient(135deg, var(--blue-light), var(--green-light));
-  box-shadow: 0 0 30px rgba(59, 130, 246, 0.3), 0 0 60px rgba(16, 185, 129, 0.15);
+/* ── Profile card avatar gradient ── */
+.avatar-ring {
+  border-radius: 50%;
+  border: 2px solid rgba(75, 158, 255, 0.4);
+  padding: 2px;
 }
