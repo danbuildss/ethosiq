@@ -303,6 +303,18 @@ export default function AppPage() {
   const [error, setError] = useState<string | null>(null);
   const [userPlan, setUserPlan] = useState<"free" | "core" | "trial">("free");
 
+  // AI Coaching state
+  const [aiCoaching, setAiCoaching] = useState<string | null>(null);
+  const [coachingLoading, setCoachingLoading] = useState(false);
+
+  // Upgrade Modal state
+  const [showUpgrade, setShowUpgrade] = useState(false);
+  const [txHash, setTxHash] = useState("");
+  const [verifying, setVerifying] = useState(false);
+  const [paymentWallet, setPaymentWallet] = useState<string | null>(null);
+  const [verifyError, setVerifyError] = useState<string | null>(null);
+  const [verifySuccess, setVerifySuccess] = useState(false);
+
   const walletAddress = user?.wallet?.address;
 
   const fetchEthosData = useCallback(async (address: string) => {
@@ -339,6 +351,38 @@ export default function AppPage() {
     if (walletAddress) fetchEthosData(walletAddress);
   }, [walletAddress, fetchEthosData]);
 
+  // Fetch AI coaching when profile is loaded
+  useEffect(() => {
+    if (!profile) return;
+    setCoachingLoading(true);
+    fetch("/api/bankr/coaching", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        score: profile.score,
+        tier: getScoreTier(profile.score).label,
+        reviews: profile.stats.review.received,
+        vouchesReceived: profile.stats.vouch.received.count,
+        vouchesGiven: profile.stats.vouch.given.count,
+        mutualVouches: vouches?.mutual?.data?.length ?? 0,
+        xpTotal: profile.xpTotal,
+        influenceFactor: profile.influenceFactor,
+      }),
+    })
+      .then(r => r.json())
+      .then(d => { if (d.coaching) setAiCoaching(d.coaching); })
+      .catch(() => {})
+      .finally(() => setCoachingLoading(false));
+  }, [profile]);
+
+  // Fetch payment wallet on mount
+  useEffect(() => {
+    fetch("/api/bankr/wallet")
+      .then(r => r.json())
+      .then(d => { if (d.wallet?.address) setPaymentWallet(d.wallet.address); })
+      .catch(() => {});
+  }, []);
+
   // Upsert user in Supabase on login
   useEffect(() => {
     if (!authenticated || !user) return;
@@ -368,6 +412,27 @@ export default function AppPage() {
       .then(d => { if (d.plan) setUserPlan(d.plan as "free" | "core" | "trial"); })
       .catch(() => {});
   }, [authenticated, user]);
+
+  // Verify payment handler
+  const verifyPayment = async () => {
+    if (!txHash || !user) return;
+    setVerifying(true);
+    setVerifyError(null);
+    const res = await fetch("/api/payment/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ txHash, privyUserId: user.id, plan: "core" }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      setVerifySuccess(true);
+      setUserPlan("core");
+      setTimeout(() => setShowUpgrade(false), 2000);
+    } else {
+      setVerifyError(data.error || "Verification failed.");
+    }
+    setVerifying(false);
+  };
 
   /* ── Not ready ── */
   if (!ready) {
@@ -665,7 +730,7 @@ export default function AppPage() {
                 )}
               </div>
 
-              {/* Right: Top Action */}
+              {/* Right: Top Action Today */}
               <div
                 style={{
                   background: SURFACE2,
@@ -696,9 +761,13 @@ export default function AppPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
                     </svg>
                   </div>
-                  <p style={{ fontSize: 12, color: MUTED, lineHeight: 1.55 }}>
-                    {getTopAction(profile, vouches)}
-                  </p>
+                  {coachingLoading ? (
+                    <span style={{ color: MUTED2, fontSize: 13 }}>Analyzing your profile...</span>
+                  ) : (
+                    <p style={{ margin: 0, fontSize: 12, color: MUTED, lineHeight: 1.55 }}>
+                      {aiCoaching || getTopAction(profile, vouches)}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -893,89 +962,78 @@ export default function AppPage() {
             )}
 
             {/* ── Section D: Upgrade Gate ── */}
-            <div
-              style={{
+            {userPlan === "free" && (
+              <div style={{
                 background: SURFACE,
-                border: `1px solid rgba(0,82,255,0.4)`,
+                border: `1px solid rgba(77,142,255,0.3)`,
                 borderRadius: 16,
-                padding: "28px 24px",
+                padding: "32px",
+                textAlign: "center",
                 position: "relative",
                 overflow: "hidden",
-                boxShadow: "0 0 40px rgba(0,82,255,0.08)",
-              }}
-            >
-              {/* Glow */}
-              <div
-                aria-hidden
-                style={{
-                  position: "absolute",
-                  bottom: -60,
-                  right: -60,
-                  width: 300,
-                  height: 300,
-                  borderRadius: "50%",
-                  background: "radial-gradient(circle, rgba(0,82,255,0.15) 0%, transparent 70%)",
-                  pointerEvents: "none",
-                }}
-              />
-              <div style={{ position: "relative", zIndex: 1 }}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: "#6B9FFF", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 8 }}>
-                  Upgrade
-                </div>
-                <h3 style={{ fontSize: 20, fontWeight: 800, color: "#fff", letterSpacing: "-0.5px", marginBottom: 16 }}>
-                  Unlock Weekly Coaching
-                </h3>
-
-                {/* Feature pills */}
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
-                  {["Weekly Brief", "Matchmaker", "Vouch ROI", "Score Simulator"].map((feat) => (
-                    <span
-                      key={feat}
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: "#6B9FFF",
-                        background: "rgba(0,82,255,0.12)",
-                        border: "1px solid rgba(0,82,255,0.25)",
-                        padding: "6px 12px",
-                        borderRadius: 20,
-                      }}
-                    >
-                      {feat}
-                    </span>
-                  ))}
-                </div>
-
-                <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-                  <div>
-                    <div style={{ fontSize: 32, fontWeight: 800, color: "#fff", letterSpacing: "-1.5px", lineHeight: 1 }}>
-                      $10<span style={{ fontSize: 14, fontWeight: 500, color: MUTED }}>/month</span>
-                    </div>
-                    <div style={{ fontSize: 12, color: MUTED2, marginTop: 4 }}>
-                      Pay with USDC, ETH, or BNKR on Base
-                    </div>
+              }}>
+                <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 600px 200px at 50% 100%, rgba(77,142,255,0.06), transparent)", pointerEvents: "none" }} />
+                <div style={{ position: "relative" }}>
+                  <h3 style={{ margin: "0 0 8px", fontSize: 20, fontWeight: 700, color: "#fff" }}>
+                    Unlock <span style={{ color: "#4D8EFF" }}>Core Coaching</span>
+                  </h3>
+                  <p style={{ margin: "0 0 20px", fontSize: 14, color: MUTED, maxWidth: 480, marginLeft: "auto", marginRight: "auto" }}>
+                    Weekly Briefs, Reputation Matchmaker, Vouch ROI Analyzer, and Score Simulator.
+                  </p>
+                  <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap", marginBottom: 20 }}>
+                    {["Weekly Brief", "Matchmaker", "Vouch ROI", "Score Simulator"].map(f => (
+                      <span key={f} style={{ background: "rgba(77,142,255,0.1)", border: "1px solid rgba(77,142,255,0.2)", borderRadius: 99, padding: "4px 12px", fontSize: 12, color: "#4D8EFF", fontWeight: 600 }}>{f}</span>
+                    ))}
                   </div>
-                  <button
-                    style={{
-                      background: BLUE,
-                      color: "#fff",
-                      fontWeight: 700,
-                      fontSize: 14,
-                      padding: "12px 24px",
-                      borderRadius: 10,
-                      cursor: "pointer",
-                      border: "none",
-                      transition: "background 0.15s",
-                      whiteSpace: "nowrap",
-                    }}
-                    onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "#1A65FF")}
-                    onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = BLUE)}
-                  >
-                    Upgrade to Core Coaching
-                  </button>
+                  {!showUpgrade ? (
+                    <button onClick={() => setShowUpgrade(true)} style={{ background: "#4D8EFF", color: "#fff", border: "none", borderRadius: 8, padding: "12px 32px", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
+                      Upgrade — $10/month
+                    </button>
+                  ) : (
+                    <div style={{ background: "#0A0A0A", border: "1px solid #1A1A1A", borderRadius: 12, padding: "24px", maxWidth: 480, margin: "0 auto", textAlign: "left" }}>
+                      {verifySuccess ? (
+                        <p style={{ color: "#00FF94", fontWeight: 600, textAlign: "center", margin: 0 }}>Payment verified. Core Coaching unlocked.</p>
+                      ) : (
+                        <>
+                          <p style={{ margin: "0 0 12px", fontSize: 13, fontWeight: 600, color: "#fff" }}>Send payment on Base</p>
+                          <div style={{ background: "#111", border: "1px solid #1A1A1A", borderRadius: 8, padding: 12, marginBottom: 12 }}>
+                            <p style={{ margin: "0 0 4px", fontSize: 11, color: MUTED2, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600 }}>Amount</p>
+                            <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#fff" }}>10 USDC <span style={{ color: MUTED2, fontWeight: 400 }}>or equivalent ETH/BNKR</span></p>
+                          </div>
+                          <div style={{ background: "#111", border: "1px solid #1A1A1A", borderRadius: 8, padding: 12, marginBottom: 16 }}>
+                            <p style={{ margin: "0 0 4px", fontSize: 11, color: MUTED2, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600 }}>Send to</p>
+                            <p style={{ margin: 0, fontSize: 12, fontFamily: "monospace", color: "#4D8EFF", wordBreak: "break-all" }}>
+                              {paymentWallet || "Loading wallet..."}
+                            </p>
+                          </div>
+                          <p style={{ margin: "0 0 8px", fontSize: 13, color: MUTED2 }}>After sending, paste your transaction hash:</p>
+                          <input
+                            value={txHash}
+                            onChange={e => setTxHash(e.target.value)}
+                            placeholder="0x..."
+                            style={{ width: "100%", background: "#111", border: "1px solid #2A2A2A", borderRadius: 8, color: "#fff", padding: "10px 12px", fontSize: 13, fontFamily: "monospace", boxSizing: "border-box", marginBottom: 8 }}
+                          />
+                          {verifyError && <p style={{ color: "#F87171", fontSize: 12, margin: "0 0 8px" }}>{verifyError}</p>}
+                          <div style={{ display: "flex", gap: 8 }}>
+                            <button
+                              onClick={verifyPayment}
+                              disabled={!txHash || verifying}
+                              style={{ flex: 1, background: "#4D8EFF", color: "#fff", border: "none", borderRadius: 8, padding: "10px", fontSize: 14, fontWeight: 700, cursor: txHash && !verifying ? "pointer" : "not-allowed", opacity: !txHash || verifying ? 0.5 : 1 }}
+                            >
+                              {verifying ? "Verifying..." : "Verify Payment"}
+                            </button>
+                            <button onClick={() => setShowUpgrade(false)} style={{ background: "#1A1A1A", color: MUTED, border: "1px solid #2A2A2A", borderRadius: 8, padding: "10px 16px", fontSize: 13, cursor: "pointer" }}>
+                              Cancel
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+                  <p style={{ margin: "12px 0 0", fontSize: 11, color: MUTED2 }}>Pay with USDC, ETH, or BNKR on Base. No credit card.</p>
                 </div>
               </div>
-            </div>
+            )}
           </>
         )}
       </main>
