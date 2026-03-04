@@ -904,9 +904,9 @@ function Features() {
 /* ── Stats ───────────────────────────────────────────────────────── */
 function Stats() {
   const stats = [
-    { value: "12,400+", label: "Profiles Analyzed" },
-    { value: "340+", label: "Scores Improved This Month" },
-    { value: "4.9/5", label: "User Rating" },
+    { value: "Live on Ethos Network", label: "Real scores, real data, no simulations" },
+    { value: "5 Score Factors Tracked", label: "Reviews, vouches, XP, influence, mutual (3,3)" },
+    { value: "Free to Start", label: "No wallet required for your first score check" },
   ];
 
   return (
@@ -951,16 +951,16 @@ function Stats() {
             <div
               className="score-shimmer"
               style={{
-                fontSize: "clamp(36px, 5vw, 52px)",
+                fontSize: "clamp(20px, 2.5vw, 28px)",
                 fontWeight: 800,
-                letterSpacing: "-2px",
+                letterSpacing: "-0.5px",
                 fontStyle: "italic",
                 fontFamily: "Georgia, serif",
               }}
             >
               {s.value}
             </div>
-            <div style={{ fontSize: 15, color: MUTED, marginTop: 8 }}>{s.label}</div>
+            <div style={{ fontSize: 14, color: MUTED, marginTop: 8 }}>{s.label}</div>
           </div>
         ))}
       </div>
@@ -971,13 +971,6 @@ function Stats() {
 /* ── Free Trial Section ──────────────────────────────────────────── */
 function FreeTrial() {
   const [code, setCode] = useState("");
-  const [activated, setActivated] = useState(false);
-
-  const handleActivate = () => {
-    if (code.trim()) {
-      setActivated(true);
-    }
-  };
 
   return (
     <section
@@ -1009,73 +1002,54 @@ function FreeTrial() {
             Start Your Free Trial
           </h2>
           <p style={{ fontSize: 15, color: MUTED, lineHeight: 1.65, maxWidth: 520, margin: "0 auto 32px" }}>
-            Get full access to all Core Coaching features for 7 days. No payment required. Use your trial code at checkout.
+            Get full access to all Core Coaching features for 7 days. No payment required. Connect your wallet in the app and enter your code there to activate.
           </p>
 
-          {activated ? (
-            <div
+          <div
+            style={{
+              display: "flex",
+              gap: 10,
+              justifyContent: "center",
+              flexWrap: "wrap",
+              marginBottom: 16,
+            }}
+          >
+            <input
+              type="text"
+              placeholder="Have a trial code?"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                background: "rgba(0,255,148,0.1)",
-                border: "1px solid rgba(0,255,148,0.3)",
-                borderRadius: 10,
-                padding: "14px 24px",
-                color: GREEN,
+                background: "#111",
+                border: "1px solid #272727",
+                borderRadius: 8,
+                padding: "13px 16px",
+                color: "#fff",
+                fontSize: 14,
+                width: "100%",
+                maxWidth: 280,
+                outline: "none",
+              }}
+            />
+            <button
+              onClick={() => { window.location.href = "/app"; }}
+              style={{
+                background: BLUE,
+                color: "#fff",
                 fontWeight: 700,
-                fontSize: 15,
+                fontSize: 14,
+                padding: "13px 24px",
+                borderRadius: 8,
+                border: "none",
+                cursor: "pointer",
+                transition: "background 0.15s",
               }}
+              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "#6BA3FF")}
+              onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = BLUE)}
             >
-              Code accepted! Your 7-day trial is active.
-            </div>
-          ) : (
-            <div
-              style={{
-                display: "flex",
-                gap: 10,
-                justifyContent: "center",
-                flexWrap: "wrap",
-                marginBottom: 16,
-              }}
-            >
-              <input
-                type="text"
-                placeholder="Enter trial code"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                style={{
-                  background: "#111",
-                  border: "1px solid #272727",
-                  borderRadius: 8,
-                  padding: "13px 16px",
-                  color: "#fff",
-                  fontSize: 14,
-                  width: "100%",
-                  maxWidth: 280,
-                  outline: "none",
-                }}
-              />
-              <button
-                onClick={handleActivate}
-                style={{
-                  background: BLUE,
-                  color: "#fff",
-                  fontWeight: 700,
-                  fontSize: 14,
-                  padding: "13px 24px",
-                  borderRadius: 8,
-                  border: "none",
-                  cursor: "pointer",
-                  transition: "background 0.15s",
-                }}
-                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "#6BA3FF")}
-                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = BLUE)}
-              >
-                Activate Trial
-              </button>
-            </div>
-          )}
+              Go to App to Activate
+            </button>
+          </div>
 
           <p style={{ fontSize: 13, color: MUTED, marginBottom: 8 }}>
             Don&apos;t have a code? Share EthosIQ on X and DM{" "}

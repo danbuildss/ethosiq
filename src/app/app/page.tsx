@@ -301,6 +301,7 @@ export default function AppPage() {
   const [vouches, setVouches] = useState<VouchData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [userPlan, setUserPlan] = useState<"free" | "core" | "trial">("free");
 
   const walletAddress = user?.wallet?.address;
 
@@ -337,6 +338,36 @@ export default function AppPage() {
   useEffect(() => {
     if (walletAddress) fetchEthosData(walletAddress);
   }, [walletAddress, fetchEthosData]);
+
+  // Upsert user in Supabase on login
+  useEffect(() => {
+    if (!authenticated || !user) return;
+
+    const walletAddr = user.wallet?.address;
+    const email = user.email?.address;
+    const twitterHandle = user.twitter?.username;
+    const twitterId = user.twitter?.subject;
+
+    fetch("/api/user", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        privyUserId: user.id,
+        walletAddress: walletAddr,
+        email,
+        twitterHandle,
+        twitterId,
+      }),
+    }).catch(() => {}); // silent fail — non-blocking
+  }, [authenticated, user]);
+
+  useEffect(() => {
+    if (!authenticated || !user) return;
+    fetch(`/api/user?privyUserId=${user.id}`)
+      .then(r => r.json())
+      .then(d => { if (d.plan) setUserPlan(d.plan as "free" | "core" | "trial"); })
+      .catch(() => {});
+  }, [authenticated, user]);
 
   /* ── Not ready ── */
   if (!ready) {
