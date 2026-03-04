@@ -416,6 +416,18 @@ export default function AppPage() {
   const [claiming, setClaiming] = useState(false);
   const [claimResult, setClaimResult] = useState<{ pointsEarned: number; bonusMessage?: string } | null>(null);
 
+  // Expandable features state
+  const [expandedFeature, setExpandedFeature] = useState<string | null>(null);
+  const toggleFeature = (key: string) => setExpandedFeature(prev => prev === key ? null : key);
+
+  // Matchmaker state
+  const [matchmakerData, setMatchmakerData] = useState<Array<Record<string, unknown>>>([]);
+  const [matchmakerLoading, setMatchmakerLoading] = useState(false);
+
+  // Simulator state
+  const [simulatorVouches, setSimulatorVouches] = useState(0);
+  const [simulatorReviews, setSimulatorReviews] = useState(0);
+
   // Trial state
   const [showTrialInput, setShowTrialInput] = useState(false);
   const [trialCode, setTrialCode] = useState("");
@@ -577,6 +589,22 @@ export default function AppPage() {
     }
     setVerifying(false);
   };
+
+  // Matchmaker loader
+  const loadMatchmaker = async () => {
+    if (matchmakerData.length > 0) return;
+    setMatchmakerLoading(true);
+    try {
+      const mostCredible = vouches?.mostCredible?.data || [];
+      setMatchmakerData(mostCredible.slice(0, 5) as Array<Record<string, unknown>>);
+    } catch {}
+    setMatchmakerLoading(false);
+  };
+
+  // Load matchmaker when expanded
+  useEffect(() => {
+    if (expandedFeature === "matchmaker") loadMatchmaker();
+  }, [expandedFeature]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Activate trial handler
   const activateTrial = async () => {
@@ -1382,7 +1410,7 @@ export default function AppPage() {
                 )}
               </div>
 
-              <div className="features-grid upgrade-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 12 }}>
                 {[
                   {
                     key: "brief",
@@ -1392,9 +1420,28 @@ export default function AppPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                     ),
-                    content: userPlan !== "free" ? generateWeeklyBrief(profile) : null,
                     lockedMsg: "Miss this and you could lose tier without knowing.",
                     accentColor: "#4D8EFF",
+                    expandedContent: (
+                      <div style={{ marginTop: 12, borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 12 }}>
+                        {[
+                          { label: "Current Score", value: profile?.score?.toLocaleString() || "—", color: tier.color },
+                          { label: "Tier", value: tier.label, color: tier.color },
+                          { label: "Positive Reviews", value: (profile?.stats?.review?.received?.positive || 0).toString(), color: "#00FF94" },
+                          { label: "Negative Reviews", value: (profile?.stats?.review?.received?.negative || 0).toString(), color: "#F87171" },
+                          { label: "Vouches Received", value: (profile?.stats?.vouch?.received?.count || 0).toString(), color: "#4D8EFF" },
+                          { label: "XP Total", value: (profile?.xpTotal || 0).toLocaleString(), color: "#A78BFA" },
+                        ].map(({ label, value, color }) => (
+                          <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                            <span style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", fontWeight: 500 }}>{label}</span>
+                            <span style={{ fontSize: 13, fontWeight: 700, color }}>{value}</span>
+                          </div>
+                        ))}
+                        <div style={{ marginTop: 12, background: "rgba(77,142,255,0.06)", border: "1px solid rgba(77,142,255,0.15)", borderRadius: 9, padding: "10px 14px", fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: "1.6" }}>
+                          {generateWeeklyBrief(profile)}
+                        </div>
+                      </div>
+                    ),
                   },
                   {
                     key: "matchmaker",
@@ -1404,9 +1451,53 @@ export default function AppPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
                     ),
-                    content: userPlan !== "free" ? generateMatchmaker(profile, vouches) : null,
                     lockedMsg: "Who you vouch for can silently hurt your influence.",
                     accentColor: "#A78BFA",
+                    expandedContent: (
+                      <div style={{ marginTop: 12, borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 12 }}>
+                        <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
+                          <div style={{ flex: 1, background: "rgba(167,139,250,0.08)", border: "1px solid rgba(167,139,250,0.2)", borderRadius: 8, padding: "8px 12px", fontSize: 12, color: "rgba(255,255,255,0.6)", lineHeight: "1.5" }}>
+                            <strong style={{ color: "#A78BFA" }}>Goal:</strong> Get mutual vouches (3,3). You vouch them + they vouch you = both scores increase.
+                          </div>
+                        </div>
+                        {matchmakerLoading ? (
+                          <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 12, textAlign: "center", padding: "12px 0" }}>Finding matches...</div>
+                        ) : matchmakerData.length > 0 ? (
+                          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                            {matchmakerData.map((match, i) => {
+                              const subject = match.subject as Record<string, unknown> | undefined;
+                              const matchName = (subject?.displayName as string) || (subject?.username as string) || "Unknown";
+                              const matchScore = (match.score as number) || (subject?.score as number) || 0;
+                              const matchTier = getScoreTier(matchScore);
+                              const matchHandle = (subject?.username as string) || "";
+                              return (
+                                <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#0D0D0D", border: "1px solid #1E1E1E", borderRadius: 10, padding: "10px 14px" }}>
+                                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                    <div style={{ width: 32, height: 32, borderRadius: "50%", background: `linear-gradient(135deg, ${matchTier.color}40, ${matchTier.color}20)`, border: `1px solid ${matchTier.color}50`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: matchTier.color, flexShrink: 0 }}>
+                                      {matchName[0]?.toUpperCase() || "?"}
+                                    </div>
+                                    <div>
+                                      <div style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>{matchName}</div>
+                                      <div style={{ fontSize: 11, color: matchTier.color, fontWeight: 600 }}>{matchScore.toLocaleString()} · {matchTier.label}</div>
+                                    </div>
+                                  </div>
+                                  <a href={`https://app.ethos.network/profile/x/${matchHandle}`} target="_blank" rel="noopener noreferrer"
+                                    style={{ background: "rgba(167,139,250,0.15)", border: "1px solid rgba(167,139,250,0.3)", color: "#A78BFA", borderRadius: 7, padding: "5px 12px", fontSize: 11, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>
+                                    Vouch ↗
+                                  </a>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", padding: "8px 0" }}>
+                            {generateMatchmaker(profile, vouches)}
+                            <br /><br />
+                            <a href="https://app.ethos.network" target="_blank" rel="noopener noreferrer" style={{ color: "#A78BFA" }}>Browse top builders on Ethos ↗</a>
+                          </div>
+                        )}
+                      </div>
+                    ),
                   },
                   {
                     key: "roi",
@@ -1416,9 +1507,32 @@ export default function AppPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                       </svg>
                     ),
-                    content: userPlan !== "free" ? generateVouchROI(profile, vouches) : null,
                     lockedMsg: "Not all vouches are equal. See which ones are dead weight.",
                     accentColor: "#00FF94",
+                    expandedContent: (
+                      <div style={{ marginTop: 12, borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 12 }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+                          {[
+                            { label: "Vouches Given", value: profile?.stats?.vouch?.given?.count || 0, color: "#4D8EFF" },
+                            { label: "Vouches Received", value: profile?.stats?.vouch?.received?.count || 0, color: "#00FF94" },
+                            { label: "Mutual (3,3)", value: vouches?.mutual?.data?.length || 0, color: "#A78BFA" },
+                            { label: "Return Ratio", value: (() => { const g = profile?.stats?.vouch?.given?.count || 0; const r = profile?.stats?.vouch?.received?.count || 0; return g > 0 ? (r/g).toFixed(1) + "x" : "N/A"; })(), color: "#F59E0B" },
+                          ].map(({ label, value, color }) => (
+                            <div key={label} style={{ background: "#0D0D0D", border: `1px solid ${color}20`, borderRadius: 9, padding: "12px 14px" }}>
+                              <div style={{ fontSize: 18, fontWeight: 800, color }}>{value}</div>
+                              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 2, fontWeight: 600 }}>{label}</div>
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{ background: "rgba(77,142,255,0.06)", border: "1px solid rgba(77,142,255,0.15)", borderRadius: 9, padding: "10px 14px", fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: "1.6" }}>
+                          {generateVouchROI(profile, vouches)}
+                        </div>
+                        <a href="https://app.ethos.network" target="_blank" rel="noopener noreferrer"
+                          style={{ display: "inline-block", marginTop: 10, fontSize: 12, color: "#4D8EFF", fontWeight: 600, textDecoration: "none" }}>
+                          Manage your vouches on Ethos ↗
+                        </a>
+                      </div>
+                    ),
                   },
                   {
                     key: "simulator",
@@ -1428,22 +1542,73 @@ export default function AppPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                       </svg>
                     ),
-                    content: userPlan !== "free" ? generateSimulator(profile) : null,
                     lockedMsg: "See your score in 30 days if you do nothing.",
                     accentColor: "#F59E0B",
+                    expandedContent: (
+                      <div style={{ marginTop: 12, borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 12 }}>
+                        <div style={{ marginBottom: 16 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                            <label style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.5)" }}>New Vouches</label>
+                            <span style={{ fontSize: 14, fontWeight: 800, color: "#F59E0B" }}>{simulatorVouches}</span>
+                          </div>
+                          <input type="range" min={0} max={20} value={simulatorVouches}
+                            onChange={e => setSimulatorVouches(Number(e.target.value))}
+                            style={{ width: "100%", accentColor: "#F59E0B", cursor: "pointer" }} />
+                        </div>
+                        <div style={{ marginBottom: 16 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                            <label style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.5)" }}>New Positive Reviews</label>
+                            <span style={{ fontSize: 14, fontWeight: 800, color: "#F59E0B" }}>{simulatorReviews}</span>
+                          </div>
+                          <input type="range" min={0} max={20} value={simulatorReviews}
+                            onChange={e => setSimulatorReviews(Number(e.target.value))}
+                            style={{ width: "100%", accentColor: "#F59E0B", cursor: "pointer" }} />
+                        </div>
+                        {(() => {
+                          const projectedGain = (simulatorVouches * 50) + (simulatorReviews * 30);
+                          const projectedScore = (profile?.score || 0) + projectedGain;
+                          const currentTier = getScoreTier(profile?.score || 0);
+                          const projectedTier = getScoreTier(projectedScore);
+                          const tierChanged = projectedTier.label !== currentTier.label;
+                          return (
+                            <div style={{ background: "#0D0D0D", border: `1px solid ${tierChanged ? projectedTier.color + "40" : "#1E1E1E"}`, borderRadius: 10, padding: "14px 16px" }}>
+                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                <div>
+                                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>Projected Score</div>
+                                  <div style={{ fontSize: 28, fontWeight: 900, color: projectedTier.color, letterSpacing: "-1px" }}>{projectedScore.toLocaleString()}</div>
+                                </div>
+                                {projectedGain > 0 && (
+                                  <div style={{ textAlign: "right" }}>
+                                    <div style={{ fontSize: 18, fontWeight: 800, color: "#00FF94" }}>+{projectedGain}</div>
+                                    {tierChanged && <div style={{ fontSize: 11, color: projectedTier.color, fontWeight: 700, marginTop: 2 }}>→ {projectedTier.label}</div>}
+                                  </div>
+                                )}
+                              </div>
+                              {projectedGain === 0 && (
+                                <p style={{ margin: "8px 0 0", fontSize: 12, color: "rgba(255,255,255,0.3)" }}>Move the sliders to simulate score changes</p>
+                              )}
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    ),
                   },
-                ].map(({ key, title, icon, content, lockedMsg, accentColor }) => {
+                ].map(({ key, title, icon, lockedMsg, accentColor, expandedContent }) => {
                   const isLocked = userPlan === "free";
+                  const isExpanded = expandedFeature === key;
                   return (
                     <div key={key} style={{
                       background: isLocked ? "#0D0D0D" : "linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))",
-                      border: `1px solid ${isLocked ? "#1A1A1A" : `${accentColor}25`}`,
+                      border: `1px solid ${isLocked ? "#1A1A1A" : (isExpanded ? `${accentColor}40` : `${accentColor}25`)}`,
                       borderRadius: 14,
                       padding: "18px 20px",
                       position: "relative",
                       overflow: "hidden",
                       transition: "border-color 0.2s",
-                    }}>
+                      cursor: isLocked ? "default" : "pointer",
+                    }}
+                      onClick={() => !isLocked && toggleFeature(key)}
+                    >
                       {/* Locked overlay */}
                       {isLocked && (
                         <div style={{
@@ -1464,23 +1629,34 @@ export default function AppPage() {
                       )}
 
                       {/* Header */}
-                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                        <div style={{
-                          width: 34, height: 34, borderRadius: 9, flexShrink: 0,
-                          background: `${accentColor}15`,
-                          border: `1px solid ${accentColor}30`,
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          color: accentColor,
-                        }}>
-                          {icon}
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <div style={{
+                            width: 34, height: 34, borderRadius: 9, flexShrink: 0,
+                            background: `${accentColor}15`,
+                            border: `1px solid ${accentColor}30`,
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            color: accentColor,
+                          }}>
+                            {icon}
+                          </div>
+                          <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#fff" }}>{title}</p>
                         </div>
-                        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#fff" }}>{title}</p>
+                        {!isLocked && (
+                          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                            style={{ color: accentColor, transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s", flexShrink: 0 }}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        )}
                       </div>
 
-                      {/* Content */}
-                      <p style={{ margin: 0, fontSize: 13, color: "rgba(255,255,255,0.55)", lineHeight: "1.6" }}>
-                        {content || lockedMsg}
-                      </p>
+                      {/* Collapsed summary */}
+                      {!isExpanded && (
+                        <p style={{ margin: "8px 0 0", fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{lockedMsg}</p>
+                      )}
+
+                      {/* Expanded content */}
+                      {isExpanded && !isLocked && expandedContent}
 
                       {/* Active accent bar */}
                       {!isLocked && (
