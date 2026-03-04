@@ -553,8 +553,8 @@ function Partners() {
       bg: "#B8B8A8",
       imgStyle: { objectFit: "cover" as const, borderRadius: 4 },
     },
-    { src: "/logos/bankr.svg", alt: "Bankr", bg: "#1A1A1A", imgStyle: { filter: "brightness(0) invert(1)", objectFit: "contain" as const } },
-    { src: "/logos/claude.svg", alt: "Claude", bg: "#1A1A1A", imgStyle: { filter: "brightness(0) invert(1)", objectFit: "contain" as const } },
+    { src: "/logos/bankr-logo.jpg", alt: "Bankr", bg: "#7C5CE1", imgStyle: { objectFit: "contain" as const } },
+    { src: "/logos/claude-logo.jpg", alt: "Claude", bg: "#C96442", imgStyle: { objectFit: "contain" as const } },
   ];
 
   return (
