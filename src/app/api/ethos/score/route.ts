@@ -39,6 +39,25 @@ export async function POST(req: NextRequest) {
 
     const user = users[0];
 
+    // Fetch full profile for social data
+    let profileData: Record<string, unknown> | null = null;
+    if (user.profileId) {
+      try {
+        const profileRes = await fetch(
+          `https://api.ethos.network/api/v1/profiles/${user.profileId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              "X-Ethos-Client": "ethos-iq@1.0.0",
+            },
+          }
+        );
+        profileData = profileRes.ok ? await profileRes.json() : null;
+      } catch {
+        // non-fatal — social data is optional
+      }
+    }
+
     return NextResponse.json({
       profileId: user.profileId,
       displayName: user.displayName,
@@ -52,6 +71,10 @@ export async function POST(req: NextRequest) {
       influenceFactorPercentile: user.influenceFactorPercentile,
       stats: user.stats,
       links: user.links,
+      twitterHandle: user.twitterHandle || (profileData as Record<string, unknown> | null)?.twitterHandle || null,
+      discordHandle: user.discordHandle || (profileData as Record<string, unknown> | null)?.discordHandle || null,
+      farcasterHandle: user.farcasterHandle || (profileData as Record<string, unknown> | null)?.farcasterHandle || null,
+      socials: (profileData as Record<string, unknown> | null)?.socials || (profileData as Record<string, unknown> | null)?.links || null,
     });
   } catch (error) {
     console.error("Ethos score fetch error:", error);
