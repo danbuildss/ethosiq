@@ -67,13 +67,24 @@ const MUTED = "rgba(255,255,255,0.45)";
 const MUTED2 = "rgba(255,255,255,0.25)";
 const MUTED3 = "rgba(255,255,255,0.12)";
 
+/* ─── Tier colors ───────────────────────────────────────────────── */
+const TIER_COLORS: Record<string, string> = {
+  Untrusted: "#F87171",
+  Neutral: "#9CA3AF",
+  Known: "#F59E0B",
+  Established: "#A78BFA",
+  Reputable: "#4D8EFF",
+  Exemplary: "#00FF94",
+};
+
 /* ─── Helpers ───────────────────────────────────────────────────── */
-function getScoreTier(score: number) {
-  if (score >= 2000) return { label: "Exemplary",    color: AMBER };
-  if (score >= 1600) return { label: "Reputable",    color: "#6B9FFF" };
-  if (score >= 1200) return { label: "Known",        color: "rgba(255,255,255,0.55)" };
-  if (score >= 800)  return { label: "Questionable", color: AMBER };
-  return               { label: "Untrusted",         color: RED };
+function getScoreTier(score: number): { label: string; color: string } {
+  if (score >= 2400) return { label: "Exemplary",    color: TIER_COLORS.Exemplary };
+  if (score >= 2000) return { label: "Reputable",    color: TIER_COLORS.Reputable };
+  if (score >= 1600) return { label: "Established",  color: TIER_COLORS.Established };
+  if (score >= 1200) return { label: "Known",        color: TIER_COLORS.Known };
+  if (score >= 800)  return { label: "Neutral",      color: TIER_COLORS.Neutral };
+  return               { label: "Untrusted",         color: TIER_COLORS.Untrusted };
 }
 
 function weiToEth(wei: string) {
@@ -243,13 +254,13 @@ function AppNavbar({
               {score !== undefined && (
                 <>
                   <div style={{ width: 1, height: 14, background: BORDER }} />
-                  <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{score}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: getScoreTier(score).color }}>{score}</span>
                   <div
                     style={{
                       width: 6,
                       height: 6,
                       borderRadius: "50%",
-                      background: score >= 1600 ? "#6B9FFF" : score >= 1200 ? MUTED2 : RED,
+                      background: getScoreTier(score).color,
                     }}
                   />
                 </>
@@ -782,10 +793,10 @@ export default function AppPage() {
               className="card-anim-1"
               style={{
                 background: SURFACE,
-                border: `1px solid ${profile.score >= 1600 ? "rgba(0,82,255,0.4)" : BORDER}`,
+                border: `1px solid ${tier.color}30`,
                 borderRadius: 16,
                 padding: "28px",
-                boxShadow: profile.score >= 1600 ? "0 0 40px rgba(0,82,255,0.1)" : "none",
+                boxShadow: `0 0 60px ${tier.color}15, inset 0 0 60px ${tier.color}05`,
                 display: "grid",
                 gridTemplateColumns: "auto 1fr",
                 gap: 28,
@@ -904,13 +915,13 @@ export default function AppPage() {
                   Ethos Score
                 </div>
                 <span
-                  className="score-glow"
                   style={{
                     fontSize: 72,
                     fontWeight: 800,
                     lineHeight: 1,
                     letterSpacing: "-4px",
                     display: "inline-block",
+                    color: tier.color,
                   }}
                 >
                   {profile.score}
@@ -923,7 +934,7 @@ export default function AppPage() {
                         height: "100%",
                         width: `${Math.min((profile.score / 2800) * 100, 100)}%`,
                         borderRadius: 6,
-                        background: `linear-gradient(90deg, ${BLUE}, #6B9FFF)`,
+                        background: `linear-gradient(90deg, #4D8EFF, ${tier.color})`,
                         transition: "width 1s ease",
                       }}
                     />
@@ -1183,59 +1194,129 @@ export default function AppPage() {
             </div>
 
             {/* ── Section E: Core Features ── */}
-            <div style={{ marginTop: 24 }}>
-              <p style={{ margin: "0 0 12px", fontSize: 11, fontWeight: 700, color: MUTED2, textTransform: "uppercase", letterSpacing: "0.1em" }}>
-                Core Features {userPlan === "free" && <span style={{ color: "#F59E0B", marginLeft: 6 }}>— Locked</span>}
-                {(userPlan === "core" || userPlan === "trial") && <span style={{ color: "#00FF94", marginLeft: 6 }}>— Active</span>}
-              </p>
+            <div style={{ marginTop: 24 }} className="card-anim-5">
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.25)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                  Core Features
+                </p>
+                {(userPlan === "core" || userPlan === "trial") ? (
+                  <span style={{ background: "rgba(0,255,148,0.1)", border: "1px solid rgba(0,255,148,0.3)", color: "#00FF94", borderRadius: 99, padding: "2px 10px", fontSize: 10, fontWeight: 700 }}>
+                    ACTIVE
+                  </span>
+                ) : (
+                  <span style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.3)", color: "#F59E0B", borderRadius: 99, padding: "2px 10px", fontSize: 10, fontWeight: 700 }}>
+                    LOCKED
+                  </span>
+                )}
+              </div>
+
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
                 {[
                   {
+                    key: "brief",
                     title: "Weekly Brief",
-                    icon: "📋",
-                    desc: userPlan === "free" ? "Your reputation summary, delivered weekly." : generateWeeklyBrief(profile),
-                    locked: userPlan === "free",
+                    icon: (
+                      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    ),
+                    content: userPlan !== "free" ? generateWeeklyBrief(profile) : null,
+                    lockedMsg: "Miss this and you could lose tier without knowing.",
+                    accentColor: "#4D8EFF",
                   },
                   {
+                    key: "matchmaker",
                     title: "Reputation Matchmaker",
-                    icon: "🤝",
-                    desc: userPlan === "free" ? "Find wallets you should vouch with." : generateMatchmaker(profile, vouches),
-                    locked: userPlan === "free",
+                    icon: (
+                      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    ),
+                    content: userPlan !== "free" ? generateMatchmaker(profile, vouches) : null,
+                    lockedMsg: "Who you vouch for can silently hurt your influence.",
+                    accentColor: "#A78BFA",
                   },
                   {
+                    key: "roi",
                     title: "Vouch ROI",
-                    icon: "📈",
-                    desc: userPlan === "free" ? "See which vouches are helping your score most." : generateVouchROI(profile, vouches),
-                    locked: userPlan === "free",
+                    icon: (
+                      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                      </svg>
+                    ),
+                    content: userPlan !== "free" ? generateVouchROI(profile, vouches) : null,
+                    lockedMsg: "Not all vouches are equal. See which ones are dead weight.",
+                    accentColor: "#00FF94",
                   },
                   {
+                    key: "simulator",
                     title: "Score Simulator",
-                    icon: "🎯",
-                    desc: userPlan === "free" ? "Simulate what improves your score." : generateSimulator(profile),
-                    locked: userPlan === "free",
+                    icon: (
+                      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                    ),
+                    content: userPlan !== "free" ? generateSimulator(profile) : null,
+                    lockedMsg: "See your score in 30 days if you do nothing.",
+                    accentColor: "#F59E0B",
                   },
-                ].map(({ title, icon, desc, locked }) => (
-                  <div key={title} style={{
-                    background: locked ? "#0D0D0D" : SURFACE,
-                    border: `1px solid ${locked ? BORDER : "rgba(77,142,255,0.2)"}`,
-                    borderRadius: 12,
-                    padding: "16px 18px",
-                    position: "relative",
-                    overflow: "hidden",
-                  }}>
-                    {locked && (
-                      <div style={{ position: "absolute", inset: 0, backdropFilter: "blur(3px)", background: "rgba(10,10,10,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}>
-                        <div style={{ textAlign: "center" }}>
-                          <div style={{ fontSize: 20, marginBottom: 4 }}>🔒</div>
-                          <p style={{ margin: 0, fontSize: 11, color: MUTED2, fontWeight: 600 }}>Core only</p>
+                ].map(({ key, title, icon, content, lockedMsg, accentColor }) => {
+                  const isLocked = userPlan === "free";
+                  return (
+                    <div key={key} style={{
+                      background: isLocked ? "#0D0D0D" : "linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))",
+                      border: `1px solid ${isLocked ? "#1A1A1A" : `${accentColor}25`}`,
+                      borderRadius: 14,
+                      padding: "18px 20px",
+                      position: "relative",
+                      overflow: "hidden",
+                      transition: "border-color 0.2s",
+                    }}>
+                      {/* Locked overlay */}
+                      {isLocked && (
+                        <div style={{
+                          position: "absolute", inset: 0,
+                          backdropFilter: "blur(4px)",
+                          background: "rgba(10,10,10,0.65)",
+                          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                          zIndex: 2, gap: 8, padding: 16, textAlign: "center",
+                        }}>
+                          <div style={{ width: 32, height: 32, borderRadius: 8, background: `${accentColor}15`, border: `1px solid ${accentColor}30`, display: "flex", alignItems: "center", justifyContent: "center", color: accentColor }}>
+                            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                          </div>
+                          <p style={{ margin: 0, fontSize: 12, color: "rgba(255,255,255,0.4)", lineHeight: "1.5" }}>{lockedMsg}</p>
+                          <span style={{ fontSize: 10, color: accentColor, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em" }}>Core only</span>
                         </div>
+                      )}
+
+                      {/* Header */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                        <div style={{
+                          width: 34, height: 34, borderRadius: 9, flexShrink: 0,
+                          background: `${accentColor}15`,
+                          border: `1px solid ${accentColor}30`,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          color: accentColor,
+                        }}>
+                          {icon}
+                        </div>
+                        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#fff" }}>{title}</p>
                       </div>
-                    )}
-                    <div style={{ fontSize: 18, marginBottom: 6 }}>{icon}</div>
-                    <p style={{ margin: "0 0 4px", fontSize: 13, fontWeight: 700, color: locked ? MUTED : "#fff" }}>{title}</p>
-                    <p style={{ margin: 0, fontSize: 12, color: MUTED2, lineHeight: "1.5" }}>{desc}</p>
-                  </div>
-                ))}
+
+                      {/* Content */}
+                      <p style={{ margin: 0, fontSize: 13, color: "rgba(255,255,255,0.55)", lineHeight: "1.6" }}>
+                        {content || lockedMsg}
+                      </p>
+
+                      {/* Active accent bar */}
+                      {!isLocked && (
+                        <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: 2, background: `linear-gradient(90deg, ${accentColor}, transparent)`, borderRadius: "14px 14px 0 0" }} />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
