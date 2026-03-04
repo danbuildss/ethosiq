@@ -188,7 +188,7 @@ function AppNavbar({
           }}
         >
           <LogoMark size={16} />
-          Ethos<span style={{ color: "#4D8EFF" }}>IQ</span>
+          <span>Ethos<span style={{ color: "#4D8EFF" }}>IQ</span></span>
         </Link>
 
         {/* Search form */}
@@ -836,7 +836,12 @@ export default function AppPage() {
                 <div style={{ textAlign: "center" }}>
                   <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 4 }}>{name}</div>
                   {profile.username && profile.username !== name && (
-                    <div style={{ fontSize: 12, color: MUTED, marginBottom: 6 }}>@{profile.username}</div>
+                    <div style={{ fontSize: 12, color: MUTED, marginBottom: 4 }}>@{profile.username}</div>
+                  )}
+                  {walletAddress && (
+                    <div style={{ fontSize: 11, color: MUTED2, marginBottom: 6, fontFamily: "monospace" }}>
+                      {walletAddress.slice(0, 6)}…{walletAddress.slice(-4)}
+                    </div>
                   )}
                   <span
                     style={{
