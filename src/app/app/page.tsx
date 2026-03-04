@@ -957,6 +957,48 @@ export default function AppPage() {
               </div>
             </div>
 
+            {/* ── Share Card Row ── */}
+            {walletAddress && (
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                {/* Share Profile */}
+                <button
+                  onClick={() => {
+                    const url = `${window.location.origin}/profile/${walletAddress}`;
+                    navigator.clipboard.writeText(url);
+                    const btn = document.getElementById("share-btn-label");
+                    if (btn) { btn.textContent = "Link Copied!"; setTimeout(() => { if (btn) btn.textContent = "Share Profile"; }, 2000); }
+                  }}
+                  style={{ display: "flex", alignItems: "center", gap: 7, background: "#161616", border: "1px solid #2A2A2A", borderRadius: 9, padding: "9px 16px", color: "rgba(255,255,255,0.7)", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+                >
+                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                  </svg>
+                  <span id="share-btn-label">Share Profile</span>
+                </button>
+
+                {/* View Card */}
+                <a
+                  href={`/api/og/profile?address=${walletAddress}&name=${encodeURIComponent(profile.displayName || profile.username || "")}&score=${profile.score}&tier=${tier.label}&handle=${encodeURIComponent(profile.twitterHandle || "")}&avatar=${encodeURIComponent(profile.avatarUrl || (profile.twitterHandle ? `https://unavatar.io/twitter/${profile.twitterHandle}` : ""))}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ display: "flex", alignItems: "center", gap: 7, background: tier.color, border: "none", borderRadius: 9, padding: "9px 16px", color: "#000", fontSize: 13, fontWeight: 700, cursor: "pointer", textDecoration: "none" }}
+                >
+                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  View Reputation Card
+                </a>
+
+                {/* Compare */}
+                <a href="/compare" style={{ display: "flex", alignItems: "center", gap: 7, background: "#161616", border: "1px solid #2A2A2A", borderRadius: 9, padding: "9px 16px", color: "rgba(255,255,255,0.7)", fontSize: 13, fontWeight: 600, textDecoration: "none" }}>
+                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  Compare Wallets
+                </a>
+              </div>
+            )}
+
             {/* ── Section B: Action Today (Priority Card) ── */}
             <div
               className="card-anim-2"
