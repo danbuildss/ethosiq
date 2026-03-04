@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const res = await fetch("https://api.bankr.bot/agent/info", {
+    const res = await fetch("https://api.bankr.bot/agent/me", {
       headers: {
         "X-API-Key": process.env.BANKR_API_KEY!,
         "Content-Type": "application/json",
@@ -13,7 +13,6 @@ export async function GET() {
     });
 
     if (!res.ok) {
-      // Fallback: return hardcoded wallet for now
       return NextResponse.json({
         wallet: null,
         error: "Could not fetch wallet from Bankr"
@@ -21,13 +20,16 @@ export async function GET() {
     }
 
     const data = await res.json();
-    // Bankr returns wallet info — extract the Base/EVM wallet address
-    const wallet = data?.wallets?.find((w: { chain: string }) => w.chain === "base" || w.chain === "ethereum")
-      || data?.wallet
-      || data?.address
-      || null;
+    // Find EVM wallet (used on Base)
+    const evmWallet = data?.wallets?.find(
+      (w: { chain: string; address: string }) =>
+        w.chain === "evm" || w.chain === "base" || w.chain === "ethereum"
+    );
 
-    return NextResponse.json({ wallet, raw: data });
+    return NextResponse.json({
+      wallet: evmWallet || null,
+      address: evmWallet?.address || null,
+    });
   } catch {
     return NextResponse.json({ wallet: null, error: "Failed to fetch wallet" });
   }
