@@ -120,8 +120,33 @@ async function fetchEthosScore(address: string) {
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const address = searchParams.get("address");
-  if (!address) return NextResponse.json({ error: "Address is required" }, { status: 400 });
+  let address = searchParams.get("address");
+  const username = searchParams.get("username");
+
+  // If username provided (or address doesn't look like 0x), resolve via search
+  if (username || (address && !address.startsWith("0x"))) {
+    const query = username || address!;
+    try {
+      const searchRes = await fetch(
+        `https://api.ethos.network/api/v2/users/search?query=${encodeURIComponent(query)}&limit=1`,
+        { headers: { "Content-Type": "application/json", "X-Ethos-Client": "ethos-iq@1.0.0" } }
+      );
+      if (searchRes.ok) {
+        const data = await searchRes.json();
+        const user = data?.values?.[0];
+        if (user) {
+          // Find a real wallet address from userkeys
+          const walletKey = user.userkeys?.find((k: string) => k.startsWith("address:"));
+          if (walletKey) address = walletKey.replace("address:", "");
+        }
+      }
+    } catch { /* fall through */ }
+    if (!address || !address.startsWith("0x")) {
+      return NextResponse.json({ error: "No Ethos profile found for this username" }, { status: 404 });
+    }
+  }
+
+  if (!address) return NextResponse.json({ error: "Address or username is required" }, { status: 400 });
   try {
     return await fetchEthosScore(address);
   } catch {

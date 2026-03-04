@@ -28,13 +28,17 @@ export default function ProfilePage() {
   const [copied, setCopied] = useState(false);
   const [embedCopied, setEmbedCopied] = useState(false);
 
+  const isAddress = address?.startsWith("0x");
+
   useEffect(() => {
     if (!address) return;
     setLoading(true);
-    fetch(`/api/ethos/score?address=${encodeURIComponent(address)}`)
+    // Support both wallet addresses (0x...) and usernames
+    const param = isAddress ? `address=${encodeURIComponent(address)}` : `username=${encodeURIComponent(address)}`;
+    fetch(`/api/ethos/score?${param}`)
       .then(r => r.json())
       .then(d => {
-        if (d.error) setError("No Ethos profile found for this address.");
+        if (d.error) setError("No Ethos profile found.");
         else setProfile(d);
       })
       .catch(() => setError("Failed to fetch profile."))

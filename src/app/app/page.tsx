@@ -1048,7 +1048,8 @@ export default function AppPage() {
                 {/* Share Profile */}
                 <button
                   onClick={() => {
-                    const url = `${window.location.origin}/profile/${walletAddress}`;
+                    const slug = profile?.twitterHandle || profile?.username || walletAddress;
+                    const url = `${window.location.origin}/profile/${slug}`;
                     navigator.clipboard.writeText(url);
                     const btn = document.getElementById("share-btn-label");
                     if (btn) { btn.textContent = "Link Copied!"; setTimeout(() => { if (btn) btn.textContent = "Share Profile"; }, 2000); }
