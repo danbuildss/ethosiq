@@ -143,6 +143,11 @@ function Navbar() {
             alignItems: "center",
           }}
         >
+          <Link href="/compare" style={{ color: MUTED, textDecoration: "none", fontSize: 14, fontWeight: 500 }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = MUTED)}>
+            Compare
+          </Link>
           {["How It Works", "Features", "Pricing", "FAQ"].map((item) => (
             <a
               key={item}
@@ -415,10 +420,10 @@ function Hero() {
               lineHeight: 1.08,
               color: "#fff",
               letterSpacing: "-2px",
-              marginBottom: 24,
+              marginBottom: 12,
             }}
           >
-            Your Web3{" "}
+            Your Ethos score decides{" "}
             <em
               style={{
                 fontStyle: "italic",
@@ -427,11 +432,21 @@ function Hero() {
                 fontWeight: 700,
               }}
             >
-              reputation
+              who trusts you.
             </em>
-            <br />
-            has a number.
           </h1>
+
+          <p
+            className="animate-fade-up"
+            style={{
+              fontSize: 22,
+              fontWeight: 700,
+              color: "#fff",
+              marginBottom: 16,
+            }}
+          >
+            Are you optimizing it?
+          </p>
 
           <p
             className="animate-fade-up-delay-1"
@@ -443,7 +458,7 @@ function Hero() {
               maxWidth: 460,
             }}
           >
-            EthosIQ analyzes your on-chain credibility score, identifies every factor holding you back, and gives you one action per day to improve it.
+            Most builders check their score. The top 10% actively grow it. EthosIQ gives you the coaching layer Ethos doesn&apos;t.
           </p>
 
           <div className="animate-fade-up-delay-2" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
@@ -510,8 +525,9 @@ function Hero() {
             </button>
           </form>
 
-          <p style={{ fontSize: 12, color: MUTED2, marginTop: 16 }}>
-            No credit card. Connects with your existing wallet.
+          <p style={{ fontSize: 12, color: MUTED2, marginTop: 10 }}>
+            No credit card. Connects with your existing wallet.{" "}
+            or <Link href="/compare" style={{ color: BLUE, textDecoration: "none", fontWeight: 600 }}>compare two wallets</Link>
           </p>
         </div>
 
@@ -1269,10 +1285,10 @@ function Pricing() {
             <div style={{ fontSize: 13, color: MUTED, marginBottom: 28 }}>Everything in Free, plus:</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 32 }}>
               {[
-                "Weekly Brief: every Monday",
-                "Reputation Matchmaker",
-                "Vouch ROI Analyzer",
-                "Score Simulator",
+                "Weekly Brief — catch score shifts before they compound",
+                "Reputation Matchmaker — flag risky vouches, surface high-ROI ones",
+                "Vouch ROI Analyzer — see which vouches carry you vs. dead weight",
+                "Score Simulator — see your score in 30 days, then change one move",
               ].map((feat) => (
                 <div key={feat} style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke={BLUE} strokeWidth={2.5}>

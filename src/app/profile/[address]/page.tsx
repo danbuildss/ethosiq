@@ -25,6 +25,8 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [embedCopied, setEmbedCopied] = useState(false);
 
   useEffect(() => {
     if (!address) return;
@@ -41,6 +43,23 @@ export default function ProfilePage() {
 
   const tier = profile ? getScoreTier(profile.score) : null;
   const name = profile?.displayName || profile?.username || address?.slice(0, 6) + "..." + address?.slice(-4);
+
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+  const cardUrl = `/api/og/profile?address=${address}&name=${encodeURIComponent(profile?.displayName || profile?.username || "")}&score=${profile?.score || 0}&tier=${tier?.label || ""}&handle=${encodeURIComponent(profile?.twitterHandle || "")}&avatar=${encodeURIComponent(profile?.avatarUrl || (profile?.twitterHandle ? `https://unavatar.io/twitter/${profile.twitterHandle}` : ""))}`;
+
+  const copyLink = () => {
+    navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const embedCode = `<a href="https://ethosiq.vercel.app/profile/${address}" target="_blank"><img src="https://ethosiq.vercel.app/api/og/profile?address=${address}&score=${profile?.score || 0}&tier=${tier?.label || 'Neutral'}&name=${encodeURIComponent(profile?.displayName || profile?.username || '')}&handle=${encodeURIComponent(profile?.twitterHandle || '')}" width="400" height="210" alt="EthosIQ Reputation Card" style="border-radius:12px" /></a>`;
+
+  const copyEmbed = () => {
+    navigator.clipboard.writeText(embedCode);
+    setEmbedCopied(true);
+    setTimeout(() => setEmbedCopied(false), 2000);
+  };
 
   return (
     <div style={{ minHeight: "100vh", background: BG, color: "#fff", fontFamily: "'Inter', -apple-system, sans-serif" }}>
@@ -146,6 +165,35 @@ export default function ProfilePage() {
               <Link href="/app" style={{ display: "inline-block", background: BLUE, color: "#fff", borderRadius: 8, padding: "10px 28px", fontSize: 14, fontWeight: 700, textDecoration: "none" }}>
                 Check My Score — Free
               </Link>
+            </div>
+
+            {/* Share buttons */}
+            <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 16, flexWrap: "wrap" }}>
+              <button onClick={copyLink} style={{ display: "flex", alignItems: "center", gap: 6, background: "#111", border: "1px solid #2A2A2A", borderRadius: 8, padding: "9px 18px", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+                {copied ? "Link Copied!" : "Share Profile"}
+              </button>
+              <a href={cardUrl} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 6, background: "#4D8EFF", border: "none", borderRadius: 8, padding: "9px 18px", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", textDecoration: "none" }}>
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                View Card
+              </a>
+            </div>
+
+            {/* Badge embed */}
+            <div style={{ marginTop: 24, background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 12, padding: 20 }}>
+              <p style={{ margin: "0 0 10px", fontSize: 12, fontWeight: 600, color: MUTED2, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                Embed this profile
+              </p>
+              <div style={{ background: "#0A0A0A", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "10px 14px", fontFamily: "monospace", fontSize: 11, color: MUTED, wordBreak: "break-all", marginBottom: 10 }}>
+                {embedCode}
+              </div>
+              <button onClick={copyEmbed} style={{ background: "#1A1A1A", border: `1px solid #2A2A2A`, borderRadius: 7, padding: "7px 16px", color: MUTED, fontSize: 12, cursor: "pointer", fontWeight: 600 }}>
+                {embedCopied ? "Copied!" : "Copy Embed Code"}
+              </button>
             </div>
           </div>
         )}
