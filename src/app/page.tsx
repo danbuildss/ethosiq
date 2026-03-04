@@ -514,11 +514,26 @@ function Hero() {
 /* ── Partners ────────────────────────────────────────────────────── */
 function Partners() {
   const logos = [
-    { src: "/logos/base.svg", alt: "Base" },
-    { src: "/logos/ethos.svg", alt: "Ethos" },
-    { src: "/logos/privy.svg", alt: "Privy" },
-    { src: "/logos/bankr.svg", alt: "Bankr" },
-    { src: "/logos/claude.svg", alt: "Claude" },
+    {
+      src: "/logos/base-logo.jpg",
+      alt: "Base",
+      bg: "#0052FF",
+      imgStyle: { borderRadius: 6, objectFit: "cover" as const },
+    },
+    {
+      src: "/logos/privy-logo.jpg",
+      alt: "Privy",
+      bg: "#0A0A0A",
+      imgStyle: { filter: "brightness(0) invert(1)", objectFit: "contain" as const },
+    },
+    {
+      src: "/logos/ethos-logo.jpg",
+      alt: "Ethos Network",
+      bg: "#B8B8A8",
+      imgStyle: { objectFit: "cover" as const, borderRadius: 4 },
+    },
+    { src: "/logos/bankr.svg", alt: "Bankr", bg: "#1A1A1A", imgStyle: { filter: "brightness(0) invert(1)", objectFit: "contain" as const } },
+    { src: "/logos/claude.svg", alt: "Claude", bg: "#1A1A1A", imgStyle: { filter: "brightness(0) invert(1)", objectFit: "contain" as const } },
   ];
 
   return (
@@ -527,10 +542,7 @@ function Partners() {
         background: "#0F0F0F",
         borderTop: "1px solid #1E1E1E",
         borderBottom: "1px solid #1E1E1E",
-        padding: "0 20px",
-        height: 70,
-        display: "flex",
-        alignItems: "center",
+        padding: "18px 20px",
       }}
     >
       <div
@@ -542,7 +554,7 @@ function Partners() {
           flexWrap: "wrap",
           alignItems: "center",
           justifyContent: "center",
-          gap: 16,
+          gap: 12,
         }}
       >
         <span
@@ -552,6 +564,7 @@ function Partners() {
             color: MUTED2,
             textTransform: "uppercase",
             letterSpacing: "0.1em",
+            marginRight: 4,
           }}
         >
           Powered by
@@ -563,19 +576,31 @@ function Partners() {
               background: "#1A1A1A",
               border: "1px solid #272727",
               borderRadius: 8,
-              padding: "10px 20px",
+              padding: "8px 16px",
               display: "flex",
               alignItems: "center",
               gap: 8,
             }}
           >
-            <Image
-              src={logo.src}
-              alt={logo.alt}
-              width={18}
-              height={18}
-              style={{ objectFit: "contain", filter: "brightness(0) invert(1)", height: 18, width: "auto" }}
-            />
+            <div style={{
+              width: 22,
+              height: 22,
+              borderRadius: 5,
+              background: logo.bg,
+              overflow: "hidden",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}>
+              <Image
+                src={logo.src}
+                alt={logo.alt}
+                width={22}
+                height={22}
+                style={{ ...logo.imgStyle, width: 22, height: 22 }}
+              />
+            </div>
             <span style={{ fontSize: 13, color: "#fff", fontWeight: 500 }}>{logo.alt}</span>
           </div>
         ))}
