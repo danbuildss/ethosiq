@@ -181,7 +181,7 @@ export async function GET(req: NextRequest) {
             display: "flex",
             letterSpacing: "0.06em",
           }}>
-            ethosiq.vercel.app
+            ethosiq.xyz
           </div>
         </div>
 
@@ -205,7 +205,7 @@ export async function GET(req: NextRequest) {
             <span style={{ color: "#4D8EFF" }}>trusts you.</span>
           </div>
           <div style={{ fontSize: 14, color: "rgba(255,255,255,0.4)", marginTop: 8, display: "flex" }}>
-            ethosiq.vercel.app
+            ethosiq.xyz
           </div>
         </div>
       </div>

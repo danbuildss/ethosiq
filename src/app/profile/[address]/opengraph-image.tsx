@@ -17,7 +17,7 @@ export default async function Image({ params }: { params: { address: string } })
 
   try {
     const res = await fetch(
-      `https://ethosiq.vercel.app/api/ethos/score?address=${encodeURIComponent(address)}`,
+      `https://ethosiq.xyz/api/ethos/score?address=${encodeURIComponent(address)}`,
       { next: { revalidate: 3600 } }
     );
     if (res.ok) {
@@ -70,7 +70,7 @@ export default async function Image({ params }: { params: { address: string } })
             ))}
           </div>
           <div style={{ background: `${color}18`, border: `1px solid ${color}40`, borderRadius: 99, padding: "5px 20px", fontSize: 13, fontWeight: 800, color: color, textTransform: "uppercase", letterSpacing: "0.15em", display: "flex", marginBottom: 16 }}>{tier}</div>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", display: "flex" }}>ethosiq.vercel.app</div>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", display: "flex" }}>ethosiq.xyz</div>
         </div>
         <div style={{ position: "absolute", right: 80, top: "50%", transform: "translateY(-50%)", display: "flex", flexDirection: "column", gap: 8, maxWidth: 320 }}>
           <div style={{ fontSize: 13, color: "rgba(255,255,255,0.3)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", display: "flex" }}>Onchain Reputation</div>
@@ -79,7 +79,7 @@ export default async function Image({ params }: { params: { address: string } })
             <span>decides who</span>
             <span style={{ color: "#4D8EFF" }}>trusts you.</span>
           </div>
-          <div style={{ fontSize: 14, color: "rgba(255,255,255,0.4)", marginTop: 8, display: "flex" }}>ethosiq.vercel.app</div>
+          <div style={{ fontSize: 14, color: "rgba(255,255,255,0.4)", marginTop: 8, display: "flex" }}>ethosiq.xyz</div>
         </div>
       </div>
     ),

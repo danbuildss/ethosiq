@@ -1094,7 +1094,7 @@ function ShareEarn() {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText("https://ethosiq.vercel.app?ref=wallet").then(() => {
+    navigator.clipboard.writeText("https://ethosiq.xyz?ref=wallet").then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     });

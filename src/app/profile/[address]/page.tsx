@@ -57,7 +57,7 @@ export default function ProfilePage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const embedCode = `<a href="https://ethosiq.vercel.app/profile/${address}" target="_blank"><img src="https://ethosiq.vercel.app/api/og/profile?address=${address}&score=${profile?.score || 0}&tier=${tier?.label || 'Neutral'}&name=${encodeURIComponent(profile?.displayName || profile?.username || '')}&handle=${encodeURIComponent(profile?.twitterHandle || '')}" width="400" height="210" alt="EthosIQ Reputation Card" style="border-radius:12px" /></a>`;
+  const embedCode = `<a href="https://ethosiq.xyz/profile/${address}" target="_blank"><img src="https://ethosiq.xyz/api/og/profile?address=${address}&score=${profile?.score || 0}&tier=${tier?.label || 'Neutral'}&name=${encodeURIComponent(profile?.displayName || profile?.username || '')}&handle=${encodeURIComponent(profile?.twitterHandle || '')}" width="400" height="210" alt="EthosIQ Reputation Card" style="border-radius:12px" /></a>`;
 
   const copyEmbed = () => {
     navigator.clipboard.writeText(embedCode);
