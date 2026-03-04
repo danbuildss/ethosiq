@@ -203,7 +203,7 @@ function AppNavbar({
         </Link>
 
         {/* Search form */}
-        <form onSubmit={handleSearch} style={{ display: "flex", gap: 6, alignItems: "center" }}>
+        <form onSubmit={handleSearch} className="nav-search" style={{ display: "flex", gap: 6, alignItems: "center" }}>
           <input
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
@@ -243,13 +243,14 @@ function AppNavbar({
               }}
             >
               <span
+                className="nav-wallet"
                 style={{
                   fontSize: 12,
                   color: MUTED2,
                   fontFamily: "monospace",
                 }}
               >
-                {walletAddress.slice(0, 6)}…{walletAddress.slice(-4)}
+                {walletAddress.slice(0, 4)}…{walletAddress.slice(-4)}
               </span>
               {score !== undefined && (
                 <>
@@ -405,6 +406,16 @@ export default function AppPage() {
   const [verifyError, setVerifyError] = useState<string | null>(null);
   const [verifySuccess, setVerifySuccess] = useState(false);
 
+  // Streak / IQ state
+  const [streakData, setStreakData] = useState<{
+    streak: number;
+    iqPoints: number;
+    longestStreak: number;
+    claimedToday: boolean;
+  } | null>(null);
+  const [claiming, setClaiming] = useState(false);
+  const [claimResult, setClaimResult] = useState<{ pointsEarned: number; bonusMessage?: string } | null>(null);
+
   // Trial state
   const [showTrialInput, setShowTrialInput] = useState(false);
   const [trialCode, setTrialCode] = useState("");
@@ -488,6 +499,33 @@ export default function AppPage() {
       .then(d => { if (d.wallet?.address) setPaymentWallet(d.wallet.address); })
       .catch(() => {});
   }, []);
+
+  // Fetch streak data when user is loaded
+  useEffect(() => {
+    if (!user) return;
+    fetch(`/api/checkin?privyUserId=${encodeURIComponent(user.id)}`)
+      .then(r => r.json())
+      .then(d => setStreakData(d))
+      .catch(() => {});
+  }, [user]);
+
+  // Claim daily check-in
+  const claimCheckin = async () => {
+    if (!user || claiming || streakData?.claimedToday) return;
+    setClaiming(true);
+    const res = await fetch("/api/checkin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ privyUserId: user.id }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      setStreakData(prev => prev ? { ...prev, streak: data.streak, iqPoints: data.iqPoints, claimedToday: true } : null);
+      setClaimResult({ pointsEarned: data.pointsEarned, bonusMessage: data.bonusMessage });
+      setTimeout(() => setClaimResult(null), 4000);
+    }
+    setClaiming(false);
+  };
 
   // Upsert user in Supabase on login
   useEffect(() => {
@@ -626,6 +664,23 @@ export default function AppPage() {
           -webkit-text-fill-color: transparent;
           animation: shimmer 4s linear infinite;
         }
+        @media (max-width: 640px) {
+          .score-hero { display: flex !important; flex-direction: column !important; align-items: center !important; text-align: center !important; }
+          .score-hero-identity { align-items: center !important; }
+          .score-number { font-size: 56px !important; letter-spacing: -2px !important; }
+          .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .features-grid { grid-template-columns: 1fr !important; }
+          .nav-search { display: none !important; }
+          .share-buttons { flex-direction: column !important; }
+          .share-buttons a, .share-buttons button { width: 100% !important; justify-content: center !important; }
+          .vouches-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .upgrade-grid { grid-template-columns: 1fr !important; }
+        }
+        @media (max-width: 480px) {
+          .nav-wallet { font-size: 12px !important; }
+          .dashboard-padding { padding: 16px 12px !important; }
+          .score-number { font-size: 48px !important; }
+        }
       `}</style>
 
       <AppNavbar
@@ -640,10 +695,11 @@ export default function AppPage() {
       />
 
       <main
+        className="dashboard-padding"
         style={{
-          maxWidth: 900,
+          maxWidth: 860,
           margin: "0 auto",
-          padding: "40px 24px",
+          padding: "40px clamp(12px, 4vw, 24px)",
           display: "flex",
           flexDirection: "column",
           gap: 24,
@@ -790,12 +846,12 @@ export default function AppPage() {
           <>
             {/* ── Section A: Score Hero ── */}
             <div
-              className="card-anim-1"
+              className="card-anim-1 score-hero"
               style={{
                 background: SURFACE,
                 border: `1px solid ${tier.color}30`,
                 borderRadius: 16,
-                padding: "28px",
+                padding: "clamp(16px, 4vw, 28px)",
                 boxShadow: `0 0 60px ${tier.color}15, inset 0 0 60px ${tier.color}05`,
                 display: "grid",
                 gridTemplateColumns: "auto 1fr",
@@ -804,7 +860,7 @@ export default function AppPage() {
               }}
             >
               {/* Left: Identity */}
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, minWidth: 100 }}>
+              <div className="score-hero-identity" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, minWidth: 100 }}>
                 {/* Avatar */}
                 {(() => {
                   const avatarSrc = profile.avatarUrl
@@ -915,6 +971,7 @@ export default function AppPage() {
                   Ethos Score
                 </div>
                 <span
+                  className="score-number"
                   style={{
                     fontSize: 72,
                     fontWeight: 800,
@@ -959,7 +1016,7 @@ export default function AppPage() {
 
             {/* ── Share Card Row ── */}
             {walletAddress && (
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <div className="share-buttons" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {/* Share Profile */}
                 <button
                   onClick={() => {
@@ -996,6 +1053,78 @@ export default function AppPage() {
                   </svg>
                   Compare Wallets
                 </a>
+              </div>
+            )}
+
+            {/* ── Streak Card ── */}
+            {streakData !== null && (
+              <div style={{
+                background: "linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(245,158,11,0.02) 100%)",
+                border: `1px solid rgba(245,158,11,0.25)`,
+                borderRadius: 14,
+                padding: "16px 20px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: 12,
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                  {/* Streak count */}
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: 28, fontWeight: 900, color: "#F59E0B", lineHeight: 1 }}>
+                      {streakData.claimedToday ? "🔥" : "🕯️"} {streakData.streak}
+                    </div>
+                    <div style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 2 }}>
+                      Day Streak
+                    </div>
+                  </div>
+
+                  <div style={{ width: 1, height: 36, background: "rgba(255,255,255,0.08)" }} />
+
+                  {/* IQ Points */}
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: "#fff" }}>{streakData.iqPoints.toLocaleString()}</div>
+                    <div style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 2 }}>
+                      IQ Points
+                    </div>
+                  </div>
+
+                  {streakData.longestStreak > 0 && (
+                    <>
+                      <div style={{ width: 1, height: 36, background: "rgba(255,255,255,0.08)" }} />
+                      <div style={{ textAlign: "center" }}>
+                        <div style={{ fontSize: 16, fontWeight: 700, color: "rgba(255,255,255,0.5)" }}>{streakData.longestStreak}</div>
+                        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.2)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 2 }}>Best</div>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  {claimResult && (
+                    <span style={{ fontSize: 12, color: "#F59E0B", fontWeight: 600 }}>
+                      +{claimResult.pointsEarned} IQ Points{claimResult.bonusMessage ? " 🎉" : ""}
+                    </span>
+                  )}
+                  <button
+                    onClick={claimCheckin}
+                    disabled={streakData.claimedToday || claiming}
+                    style={{
+                      background: streakData.claimedToday ? "rgba(255,255,255,0.05)" : "#F59E0B",
+                      color: streakData.claimedToday ? "rgba(255,255,255,0.3)" : "#000",
+                      border: streakData.claimedToday ? "1px solid rgba(255,255,255,0.1)" : "none",
+                      borderRadius: 9,
+                      padding: "9px 18px",
+                      fontSize: 13,
+                      fontWeight: 700,
+                      cursor: streakData.claimedToday ? "not-allowed" : "pointer",
+                      transition: "all 0.15s",
+                    }}
+                  >
+                    {claiming ? "Claiming..." : streakData.claimedToday ? "Claimed Today" : "Claim +10 IQ"}
+                  </button>
+                </div>
               </div>
             )}
 
@@ -1045,7 +1174,7 @@ export default function AppPage() {
             </div>
 
             {/* ── Section C: 4 Stats ── */}
-            <div className="card-anim-3" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <div className="card-anim-3 stats-grid" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
               <StatCard
                 label="Reviews"
                 value={totalReviews}
@@ -1087,6 +1216,7 @@ export default function AppPage() {
                     Your Vouch Network
                   </h3>
                   <div
+                    className="vouches-grid"
                     style={{
                       display: "grid",
                       gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
@@ -1252,7 +1382,7 @@ export default function AppPage() {
                 )}
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
+              <div className="features-grid upgrade-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
                 {[
                   {
                     key: "brief",
