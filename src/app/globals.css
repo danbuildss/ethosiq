@@ -2,23 +2,25 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #181818;
-  --surface: #232323;
-  --surface-2: #2c2c2c;
-  --surface-3: #383838;
-  --border: rgba(255, 255, 255, 0.07);
-  --border-2: rgba(255, 255, 255, 0.13);
-  --blue: #4B9EFF;
-  --blue-hover: #6BB5FF;
-  --blue-dim: rgba(75, 158, 255, 0.13);
-  --green: #4ade80;
-  --green-dim: rgba(74, 222, 128, 0.13);
-  --red: #f87171;
-  --red-dim: rgba(248, 113, 113, 0.13);
-  --amber: #fbbf24;
+  --bg: #0A0A0A;
+  --surface: #111111;
+  --surface-2: #161616;
+  --surface-3: #1E1E1E;
+  --border: #1A1A1A;
+  --border-2: rgba(255, 255, 255, 0.1);
+  --blue: #0052FF;
+  --blue-bright: #2E73FF;
+  --blue-hover: #1A65FF;
+  --blue-dim: rgba(0, 82, 255, 0.12);
+  --green: #00FF94;
+  --green-dim: rgba(0, 255, 148, 0.12);
+  --red: #F87171;
+  --red-dim: rgba(248, 113, 113, 0.12);
+  --amber: #F59E0B;
+  --amber-dim: rgba(245, 158, 11, 0.12);
   --text: #ffffff;
-  --text-2: #999999;
-  --text-3: #555555;
+  --text-2: #888888;
+  --text-3: #444444;
 }
 
 @theme inline {
@@ -51,31 +53,9 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Ticker marquee ── */
-@keyframes ticker {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
-.ticker-inner {
-  display: flex;
-  width: max-content;
-  animation: ticker 55s linear infinite;
-  will-change: transform;
-}
-.ticker-inner:hover {
-  animation-play-state: paused;
-}
-
-/* ── Base card ── */
-.e-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-}
-
 /* ── Buttons ── */
 .btn-blue {
-  background: var(--blue);
+  background: #0052FF;
   color: #fff;
   font-weight: 600;
   border-radius: 8px;
@@ -88,17 +68,17 @@ body {
   gap: 6px;
   text-decoration: none;
 }
-.btn-blue:hover { background: var(--blue-hover); }
+.btn-blue:hover { background: #1A65FF; }
 
 .btn-outline {
   background: transparent;
-  color: var(--text);
+  color: #fff;
   font-weight: 500;
   border-radius: 8px;
   font-size: 14px;
   cursor: pointer;
   transition: all 0.15s;
-  border: 1px solid var(--border-2);
+  border: 1px solid rgba(255,255,255,0.12);
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -109,20 +89,15 @@ body {
   background: rgba(255,255,255,0.04);
 }
 
-/* ── Score watermark ── */
-.score-watermark {
-  font-size: 8.5rem;
-  font-weight: 800;
-  color: rgba(255,255,255,0.055);
-  line-height: 1;
-  letter-spacing: -4px;
-  user-select: none;
-  pointer-events: none;
+/* ── Spin animation ── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.spin {
+  animation: spin 0.8s linear infinite;
 }
 
-/* ── Profile card avatar gradient ── */
-.avatar-ring {
-  border-radius: 50%;
-  border: 2px solid rgba(75, 158, 255, 0.4);
-  padding: 2px;
+/* ── FAQ accordion ── */
+.faq-item {
+  border-bottom: 1px solid #1A1A1A;
 }

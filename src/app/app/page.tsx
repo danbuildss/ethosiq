@@ -1,9 +1,12 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { usePrivy } from "@privy-io/react-auth";
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 
+/* ─── Types ───────────────────────────────────────────────────────── */
 interface EthosProfile {
   profileId: number;
   displayName: string;
@@ -46,26 +49,30 @@ interface VouchData {
   mutual: { data: Array<Record<string, unknown>> };
 }
 
-function EthosLines({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={Math.round(size * 0.75)} viewBox="0 0 20 15" fill="none">
-      <rect width="20" height="2.5" rx="1.25" fill="currentColor" />
-      <rect y="6.25" width="20" height="2.5" rx="1.25" fill="currentColor" />
-      <rect y="12.5" width="20" height="2.5" rx="1.25" fill="currentColor" />
-    </svg>
-  );
-}
+/* ─── Design tokens ─────────────────────────────────────────────── */
+const BG = "#0A0A0A";
+const SURFACE = "#111111";
+const SURFACE2 = "#161616";
+const BORDER = "#1A1A1A";
+const BLUE = "#0052FF";
+const GREEN = "#00FF94";
+const AMBER = "#F59E0B";
+const RED = "#F87171";
+const MUTED = "rgba(255,255,255,0.45)";
+const MUTED2 = "rgba(255,255,255,0.25)";
+const MUTED3 = "rgba(255,255,255,0.12)";
 
+/* ─── Helpers ───────────────────────────────────────────────────── */
 function getScoreTier(score: number) {
-  if (score >= 2000) return { label: "Exemplary",    color: "#fbbf24" };
-  if (score >= 1600) return { label: "Reputable",    color: "#4B9EFF" };
+  if (score >= 2000) return { label: "Exemplary",    color: AMBER };
+  if (score >= 1600) return { label: "Reputable",    color: "#6B9FFF" };
   if (score >= 1200) return { label: "Known",        color: "rgba(255,255,255,0.55)" };
-  if (score >= 800)  return { label: "Questionable", color: "#fbbf24" };
-  return               { label: "Untrusted",         color: "#f87171" };
+  if (score >= 800)  return { label: "Questionable", color: AMBER };
+  return               { label: "Untrusted",         color: RED };
 }
 
 function weiToEth(wei: string) {
-  const val = (parseInt(wei || "0") / 1e18);
+  const val = parseInt(wei || "0") / 1e18;
   return val === 0 ? "0" : val.toFixed(4);
 }
 
@@ -95,12 +102,199 @@ function getTopAction(profile: EthosProfile, vouches: VouchData | null): string 
   return "Excellent reputation. Maintain it by staying active — review builders, keep your vouches healthy, and respond to any reviews.";
 }
 
-function identicon(address: string) {
-  const colors = ["from-indigo-600 to-purple-700","from-emerald-600 to-teal-700","from-sky-600 to-blue-700","from-violet-700 to-purple-800","from-amber-600 to-yellow-600","from-red-700 to-orange-600"];
-  const idx = parseInt(address.slice(2,4), 16) % colors.length;
-  return colors[idx];
+function identicon(address: string): string {
+  const palettes = [
+    ["#0052FF", "#7B61FF"],
+    ["#00A86B", "#00FF94"],
+    ["#FF6B35", "#FF9500"],
+    ["#9B59B6", "#6B9FFF"],
+    ["#E74C3C", "#FF6B6B"],
+    ["#1ABC9C", "#00FF94"],
+  ];
+  const idx = parseInt(address.slice(2, 4), 16) % palettes.length;
+  return `linear-gradient(135deg, ${palettes[idx][0]}, ${palettes[idx][1]})`;
 }
 
+/* ─── Logo mark ─────────────────────────────────────────────────── */
+function LogoMark({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={Math.round(size * 0.78)} viewBox="0 0 20 15" fill="none">
+      <rect width="20" height="2.5" rx="1.25" fill="currentColor" />
+      <rect y="6.25" width="20" height="2.5" rx="1.25" fill="currentColor" />
+      <rect y="12.5" width="20" height="2.5" rx="1.25" fill="currentColor" />
+    </svg>
+  );
+}
+
+/* ─── App Navbar ────────────────────────────────────────────────── */
+function AppNavbar({
+  authenticated,
+  walletAddress,
+  score,
+  login,
+  logout,
+}: {
+  authenticated: boolean;
+  walletAddress?: string;
+  score?: number;
+  login: () => void;
+  logout: () => void;
+}) {
+  return (
+    <nav
+      style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 100,
+        background: "rgba(10,10,10,0.95)",
+        backdropFilter: "blur(12px)",
+        borderBottom: `1px solid ${BORDER}`,
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 900,
+          margin: "0 auto",
+          padding: "0 24px",
+          height: 60,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 16,
+        }}
+      >
+        <Link
+          href="/"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            color: "#fff",
+            textDecoration: "none",
+            fontWeight: 700,
+            fontSize: 16,
+            flexShrink: 0,
+          }}
+        >
+          <LogoMark size={16} />
+          Ethos&nbsp;<span style={{ color: BLUE }}>IQ</span>
+        </Link>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: "auto" }}>
+          {authenticated && walletAddress && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                background: SURFACE,
+                border: `1px solid ${BORDER}`,
+                borderRadius: 8,
+                padding: "6px 12px",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 12,
+                  color: MUTED2,
+                  fontFamily: "monospace",
+                }}
+              >
+                {walletAddress.slice(0, 6)}…{walletAddress.slice(-4)}
+              </span>
+              {score !== undefined && (
+                <>
+                  <div style={{ width: 1, height: 14, background: BORDER }} />
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{score}</span>
+                  <div
+                    style={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: "50%",
+                      background: score >= 1600 ? "#6B9FFF" : score >= 1200 ? MUTED2 : RED,
+                    }}
+                  />
+                </>
+              )}
+            </div>
+          )}
+
+          {authenticated ? (
+            <button
+              onClick={logout}
+              style={{
+                background: "transparent",
+                color: "#fff",
+                fontWeight: 500,
+                fontSize: 13,
+                padding: "8px 14px",
+                borderRadius: 8,
+                cursor: "pointer",
+                border: `1px solid ${MUTED3}`,
+                transition: "all 0.15s",
+              }}
+            >
+              Disconnect
+            </button>
+          ) : (
+            <button
+              onClick={login}
+              style={{
+                background: BLUE,
+                color: "#fff",
+                fontWeight: 600,
+                fontSize: 13,
+                padding: "8px 16px",
+                borderRadius: 8,
+                cursor: "pointer",
+                border: "none",
+                transition: "background 0.15s",
+              }}
+            >
+              Connect Wallet
+            </button>
+          )}
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+/* ─── Stat card ─────────────────────────────────────────────────── */
+function StatCard({
+  label,
+  value,
+  sub,
+  subColor,
+}: {
+  label: string;
+  value: string | number;
+  sub: string;
+  subColor?: string;
+}) {
+  return (
+    <div
+      style={{
+        background: SURFACE,
+        border: `1px solid ${BORDER}`,
+        borderRadius: 12,
+        padding: "20px",
+        flex: 1,
+        minWidth: 0,
+      }}
+    >
+      <div style={{ fontSize: 11, fontWeight: 600, color: MUTED2, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>
+        {label}
+      </div>
+      <div style={{ fontSize: 28, fontWeight: 800, color: "#fff", letterSpacing: "-1px", lineHeight: 1 }}>
+        {value}
+      </div>
+      <div style={{ fontSize: 12, color: subColor || MUTED, marginTop: 6 }}>{sub}</div>
+    </div>
+  );
+}
+
+/* ─── Main component ────────────────────────────────────────────── */
 export default function AppPage() {
   const { ready, authenticated, user, login, logout } = usePrivy();
   const [profile, setProfile] = useState<EthosProfile | null>(null);
@@ -144,133 +338,192 @@ export default function AppPage() {
     if (walletAddress) fetchEthosData(walletAddress);
   }, [walletAddress, fetchEthosData]);
 
+  /* ── Not ready ── */
   if (!ready) {
     return (
-      <div className="flex min-h-screen items-center justify-center" style={{ background: "var(--bg)" }}>
-        <div className="h-7 w-7 rounded-full border-2 animate-spin" style={{ borderColor: "var(--blue)", borderTopColor: "transparent" }} />
+      <div style={{ background: BG, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div
+          style={{
+            width: 28,
+            height: 28,
+            borderRadius: "50%",
+            border: `2px solid ${BLUE}`,
+            borderTopColor: "transparent",
+            animation: "spin 0.8s linear infinite",
+          }}
+        />
       </div>
     );
   }
 
+  /* ── Derived values (hoisted for nav) ── */
+  const tier = profile ? getScoreTier(profile.score) : null;
+  const gradient = walletAddress ? identicon(walletAddress) : "linear-gradient(135deg, #0052FF, #7B61FF)";
+  const name = profile
+    ? profile.displayName || profile.username || (walletAddress ? walletAddress.slice(0, 8) + "…" : "Unknown")
+    : undefined;
+  const totalReviews = profile
+    ? profile.stats.review.received.positive + profile.stats.review.received.neutral + profile.stats.review.received.negative
+    : 0;
+  const positiveRate = totalReviews > 0 && profile
+    ? Math.round((profile.stats.review.received.positive / totalReviews) * 100)
+    : 0;
+
   return (
-    <div className="min-h-screen" style={{ background: "var(--bg)" }}>
+    <div style={{ background: BG, minHeight: "100vh", fontFamily: "Inter, system-ui, sans-serif" }}>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+      `}</style>
 
-      {/* App Navbar */}
-      <nav
-        className="sticky top-0 z-50"
-        style={{ background: "var(--bg)", borderBottom: "1px solid var(--border)" }}
+      <AppNavbar
+        authenticated={authenticated}
+        walletAddress={walletAddress}
+        score={profile?.score}
+        login={login}
+        logout={logout}
+      />
+
+      <main
+        style={{
+          maxWidth: 900,
+          margin: "0 auto",
+          padding: "40px 24px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 24,
+        }}
       >
-        <div className="mx-auto flex max-w-7xl items-center gap-4 px-5 h-14">
-          <Link href="/" className="flex items-center gap-2 text-white shrink-0">
-            <EthosLines size={18} />
-            <span className="text-[16px] font-bold">
-              Ethos <span style={{ color: "var(--blue)" }}>IQ</span>
-            </span>
-          </Link>
-
-          {/* Search bar */}
-          <div
-            className="hidden md:flex items-center gap-2 rounded-lg px-3 py-2 w-52"
-            style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-          >
-            <svg className="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} style={{ color: "var(--text-3)" }}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-            </svg>
-            <span className="text-[13px]" style={{ color: "var(--text-3)" }}>Search wallet or ENS…</span>
-          </div>
-
-          <div className="flex items-center gap-3 ml-auto">
-            {authenticated && walletAddress && (
-              <span
-                className="hidden sm:block rounded-lg px-3 py-1.5 text-[12px] font-mono"
-                style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "rgba(255,255,255,0.5)" }}
-              >
-                {walletAddress.slice(0, 6)}…{walletAddress.slice(-4)}
-              </span>
-            )}
-            {profile && (
-              <div
-                className="hidden md:flex items-center gap-1.5 rounded-lg px-3 py-1.5"
-                style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-              >
-                <svg width="14" height="11" viewBox="0 0 18 14" fill="none" style={{ color: "rgba(255,255,255,0.4)" }}>
-                  <rect width="18" height="2.25" rx="1.125" fill="currentColor" />
-                  <rect y="5.75" width="18" height="2.25" rx="1.125" fill="currentColor" />
-                  <rect y="11.5" width="18" height="2.25" rx="1.125" fill="currentColor" />
-                </svg>
-                <span className="text-[13px] font-bold text-white">{profile.score}</span>
-              </div>
-            )}
-            {authenticated ? (
-              <button
-                onClick={logout}
-                className="btn-outline px-3.5 py-2 text-[13px]"
-              >
-                Disconnect
-              </button>
-            ) : (
-              <button
-                onClick={login}
-                className="btn-blue px-4 py-2 text-[13px]"
-              >
-                Connect Wallet
-              </button>
-            )}
-          </div>
-        </div>
-      </nav>
-
-      {/* Main content */}
-      <div className="mx-auto max-w-7xl px-5 py-8">
 
         {/* ── NOT CONNECTED ── */}
         {!authenticated && (
-          <div className="flex flex-col items-center justify-center py-32 text-center">
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: "60vh",
+              textAlign: "center",
+              gap: 20,
+            }}
+          >
             <div
-              className="mb-6 inline-flex items-center justify-center rounded-2xl p-5"
-              style={{ background: "var(--blue-dim)" }}
+              style={{
+                width: 72,
+                height: 72,
+                borderRadius: 20,
+                background: "rgba(0,82,255,0.12)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#6B9FFF",
+              }}
             >
-              <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{ color: "var(--blue)" }}>
+              <svg width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h11m5-7h-2a2 2 0 0 0-2 2v0a2 2 0 0 0 2 2h2v-4Z" />
               </svg>
             </div>
-            <h1 className="text-3xl md:text-5xl font-bold text-white">
-              Connect Your <span style={{ color: "var(--blue)" }}>Wallet</span>
-            </h1>
-            <p className="mx-auto mt-4 max-w-lg text-[15px] leading-relaxed" style={{ color: "rgba(255,255,255,0.45)" }}>
-              Connect your wallet to analyze your Ethos reputation score and get your personalized coaching plan.
-            </p>
-            <button onClick={login} className="btn-blue mt-8 px-10 py-4 text-[15px]">
+            <div>
+              <h1 style={{ fontSize: 32, fontWeight: 800, color: "#fff", letterSpacing: "-1.5px", marginBottom: 10 }}>
+                Check your Ethos score
+              </h1>
+              <p style={{ fontSize: 15, color: MUTED, maxWidth: 380, lineHeight: 1.65 }}>
+                Connect your wallet to analyze your on-chain reputation and get your personalized action plan.
+              </p>
+            </div>
+            <button
+              onClick={login}
+              style={{
+                background: BLUE,
+                color: "#fff",
+                fontWeight: 700,
+                fontSize: 15,
+                padding: "14px 32px",
+                borderRadius: 10,
+                cursor: "pointer",
+                border: "none",
+                marginTop: 8,
+              }}
+            >
               Connect Wallet
             </button>
+            <p style={{ fontSize: 12, color: MUTED2 }}>Free forever. No credit card.</p>
           </div>
         )}
 
         {/* ── LOADING ── */}
         {authenticated && loading && (
-          <div className="flex flex-col items-center justify-center py-32 text-center">
-            <div className="mb-6 h-11 w-11 rounded-full border-2 animate-spin" style={{ borderColor: "var(--blue)", borderTopColor: "transparent" }} />
-            <p className="text-[15px]" style={{ color: "rgba(255,255,255,0.45)" }}>Analyzing your Ethos profile…</p>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: "60vh",
+              gap: 16,
+            }}
+          >
+            <div
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: "50%",
+                border: `2px solid ${BLUE}`,
+                borderTopColor: "transparent",
+                animation: "spin 0.8s linear infinite",
+              }}
+            />
+            <p style={{ fontSize: 14, color: MUTED }}>Analyzing your Ethos profile…</p>
           </div>
         )}
 
         {/* ── ERROR ── */}
         {authenticated && !loading && error && (
-          <div className="flex flex-col items-center justify-center py-32 text-center">
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: "60vh",
+              textAlign: "center",
+              gap: 16,
+            }}
+          >
             <div
-              className="mb-6 inline-flex items-center justify-center rounded-2xl p-5"
-              style={{ background: "var(--red-dim, rgba(248,113,113,0.12))" }}
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: 18,
+                background: "rgba(248,113,113,0.12)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: RED,
+              }}
             >
-              <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{ color: "var(--red)" }}>
+              <svg width="30" height="30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-white">No Ethos Profile Found</h2>
-            <p className="mx-auto mt-3 max-w-md text-[14px]" style={{ color: "rgba(255,255,255,0.45)" }}>{error}</p>
-            <p className="mt-2 text-[13px]" style={{ color: "var(--text-3)" }}>Make sure this wallet has an Ethos profile, or try a different wallet.</p>
+            <div>
+              <h2 style={{ fontSize: 22, fontWeight: 700, color: "#fff", marginBottom: 8 }}>No Ethos Profile Found</h2>
+              <p style={{ fontSize: 14, color: MUTED, marginBottom: 4 }}>{error}</p>
+              <p style={{ fontSize: 13, color: MUTED2 }}>Make sure this wallet has an Ethos profile, or try a different wallet.</p>
+            </div>
             <button
               onClick={() => walletAddress && fetchEthosData(walletAddress)}
-              className="btn-outline mt-6 px-6 py-2.5 text-[13px]"
+              style={{
+                background: "transparent",
+                color: "#fff",
+                fontWeight: 600,
+                fontSize: 13,
+                padding: "10px 20px",
+                borderRadius: 8,
+                cursor: "pointer",
+                border: `1px solid ${MUTED3}`,
+              }}
             >
               Try Again
             </button>
@@ -278,377 +531,423 @@ export default function AppPage() {
         )}
 
         {/* ── DASHBOARD ── */}
-        {authenticated && !loading && !error && profile && (() => {
-          const tier = getScoreTier(profile.score);
-          const gradient = walletAddress ? identicon(walletAddress) : "from-indigo-600 to-purple-700";
-          const name = profile.displayName || profile.username || (walletAddress ? walletAddress.slice(0, 8) + "…" : "Unknown");
-          const totalReviews = profile.stats.review.received.positive + profile.stats.review.received.neutral + profile.stats.review.received.negative;
-          const positiveRate = totalReviews > 0 ? Math.round((profile.stats.review.received.positive / totalReviews) * 100) : 0;
-
-          return (
-            <div className="space-y-5">
-              {/* Page header */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-xl font-bold text-white">My profile</h1>
-                  <p className="text-[13px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
-                    Connected via Ethos IQ
-                  </p>
+        {authenticated && !loading && !error && profile && tier && name && (
+          <>
+            {/* ── Section A: Score Hero ── */}
+            <div
+              style={{
+                background: SURFACE,
+                border: `1px solid ${profile.score >= 1600 ? "rgba(0,82,255,0.4)" : BORDER}`,
+                borderRadius: 16,
+                padding: "28px",
+                boxShadow: profile.score >= 1600 ? "0 0 40px rgba(0,82,255,0.1)" : "none",
+                display: "grid",
+                gridTemplateColumns: "auto 1fr auto",
+                gap: 28,
+                alignItems: "center",
+              }}
+            >
+              {/* Left: Identity */}
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, minWidth: 100 }}>
+                <div
+                  style={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: "50%",
+                    background: gradient,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: 800,
+                    fontSize: 24,
+                    color: "#fff",
+                    border: "2px solid rgba(255,255,255,0.08)",
+                    flexShrink: 0,
+                  }}
+                >
+                  {name[0].toUpperCase()}
                 </div>
-                <div className="flex items-center gap-2">
-                  {profile.links?.scoreBreakdown && (
-                    <a
-                      href={profile.links.scoreBreakdown}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn-outline px-3.5 py-2 text-[13px]"
-                    >
-                      View on Ethos ↗
-                    </a>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 4 }}>{name}</div>
+                  {profile.username && profile.username !== name && (
+                    <div style={{ fontSize: 12, color: MUTED, marginBottom: 6 }}>@{profile.username}</div>
                   )}
-                  <button
-                    onClick={() => walletAddress && fetchEthosData(walletAddress)}
-                    className="btn-outline px-3.5 py-2 text-[13px]"
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: tier.color,
+                      background: `${tier.color}18`,
+                      border: `1px solid ${tier.color}30`,
+                      padding: "3px 10px",
+                      borderRadius: 20,
+                    }}
                   >
-                    Refresh
-                  </button>
+                    {tier.label}
+                  </span>
                 </div>
               </div>
 
-              {/* 3-column profile layout */}
-              <div className="grid grid-cols-1 lg:grid-cols-[2fr,1.2fr,1fr] gap-4">
-
-                {/* LEFT: Profile card */}
+              {/* Center: Score */}
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: MUTED2, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 4 }}>
+                  Ethos Score
+                </div>
                 <div
-                  className="rounded-xl overflow-hidden relative"
-                  style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+                  style={{
+                    fontSize: 72,
+                    fontWeight: 800,
+                    color: "#fff",
+                    lineHeight: 1,
+                    letterSpacing: "-4px",
+                  }}
                 >
-                  {/* Avatar + info top section */}
-                  <div className="p-6 pb-4">
-                    <div className="flex items-start gap-4">
-                      {/* Avatar */}
-                      <div className="shrink-0">
-                        <div
-                          className={`bg-gradient-to-br ${gradient} h-16 w-16 rounded-full flex items-center justify-center text-white font-bold text-xl`}
-                          style={{ border: "2px solid rgba(75,158,255,0.35)" }}
-                        >
-                          {name[0].toUpperCase()}
-                        </div>
-                      </div>
+                  {profile.score}
+                </div>
+                {/* Progress bar */}
+                <div style={{ marginTop: 16, padding: "0 16px" }}>
+                  <div style={{ height: 6, borderRadius: 6, background: SURFACE2, overflow: "hidden" }}>
+                    <div
+                      style={{
+                        height: "100%",
+                        width: `${Math.min((profile.score / 2800) * 100, 100)}%`,
+                        borderRadius: 6,
+                        background: `linear-gradient(90deg, ${BLUE}, #6B9FFF)`,
+                        transition: "width 1s ease",
+                      }}
+                    />
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginTop: 5 }}>
+                    <span style={{ fontSize: 10, color: MUTED2 }}>0</span>
+                    <span style={{ fontSize: 10, color: MUTED2 }}>2,800</span>
+                  </div>
+                </div>
+                {profile.links?.scoreBreakdown && (
+                  <a
+                    href={profile.links.scoreBreakdown}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ fontSize: 12, color: "#6B9FFF", textDecoration: "none", display: "inline-block", marginTop: 8 }}
+                  >
+                    View score breakdown ↗
+                  </a>
+                )}
+              </div>
 
-                      {/* Name + stats */}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[17px] font-bold" style={{ color: "var(--blue)" }}>{name}</p>
-                        <div className="mt-2 space-y-1.5">
-                          <div className="flex items-center gap-2">
-                            <svg className="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ color: "var(--green)" }}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904" />
-                            </svg>
-                            <span className="text-[13px]" style={{ color: "rgba(255,255,255,0.55)" }}>
-                              {positiveRate}% positive ({totalReviews} reviews)
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <svg className="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ color: "var(--blue)" }}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                            </svg>
-                            <span className="text-[13px]" style={{ color: "rgba(255,255,255,0.55)" }}>
-                              {profile.stats.vouch.received.count > 0
-                                ? `${profile.stats.vouch.received.count} vouches received`
-                                : "No vouches yet"}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <svg className="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ color: "var(--amber)" }}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
-                            </svg>
-                            <span className="text-[13px]" style={{ color: "rgba(255,255,255,0.55)" }}>
-                              {profile.xpTotal?.toLocaleString() ?? "—"} Contributor XP
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <svg className="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ color: "rgba(255,255,255,0.3)" }}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
-                            </svg>
-                            <span className="text-[13px]" style={{ color: "rgba(255,255,255,0.55)" }}>
-                              {profile.influenceFactor?.toFixed(0) ?? "—"} influence factor
-                              {profile.influenceFactorPercentile != null && (
-                                <span style={{ color: "var(--text-3)" }}> (top {100 - profile.influenceFactorPercentile}%)</span>
-                              )}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
+              {/* Right: Top Action */}
+              <div
+                style={{
+                  background: SURFACE2,
+                  border: `1px solid ${BORDER}`,
+                  borderRadius: 12,
+                  padding: "18px",
+                  maxWidth: 220,
+                  minWidth: 180,
+                }}
+              >
+                <div style={{ fontSize: 10, fontWeight: 600, color: MUTED2, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>
+                  Top Action Today
+                </div>
+                <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+                  <div
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 8,
+                      background: "rgba(0,82,255,0.15)",
+                      flexShrink: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#6B9FFF" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
+                    </svg>
+                  </div>
+                  <p style={{ fontSize: 12, color: MUTED, lineHeight: 1.55 }}>
+                    {getTopAction(profile, vouches)}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* ── Section B: 4 Stats ── */}
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              <StatCard
+                label="Reviews"
+                value={totalReviews}
+                sub={`${positiveRate}% positive`}
+                subColor={positiveRate >= 80 ? GREEN : MUTED}
+              />
+              <StatCard
+                label="Vouches Received"
+                value={profile.stats.vouch.received.count}
+                sub={`${weiToEth(profile.stats.vouch.received.amountWeiTotal)} ETH`}
+                subColor="#6B9FFF"
+              />
+              <StatCard
+                label="Vouches Given"
+                value={profile.stats.vouch.given.count}
+                sub={`${weiToEth(profile.stats.vouch.given.amountWeiTotal)} ETH`}
+                subColor="#6B9FFF"
+              />
+              <StatCard
+                label="Mutual (3,3)"
+                value={vouches?.mutual?.data?.length ?? "—"}
+                sub="reciprocal"
+                subColor={MUTED2}
+              />
+            </div>
+
+            {/* ── Section C: Vouch Network ── */}
+            {profile.stats.vouch.received.count > 0 && vouches ? (
+              <div
+                style={{
+                  background: SURFACE,
+                  border: `1px solid ${BORDER}`,
+                  borderRadius: 16,
+                  padding: "24px",
+                }}
+              >
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#fff", marginBottom: 20 }}>
+                  Your Vouch Network
+                </h3>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+                    gap: 20,
+                  }}
+                >
+                  {/* Most credible */}
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: MUTED2, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>
+                      Most Credible Vouchers
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      {(vouches.mostCredible?.data?.slice(0, 3) ?? []).length > 0
+                        ? (vouches.mostCredible.data.slice(0, 3) as Array<Record<string, unknown>>).map((v, i) => {
+                            const voucherName = (v.authorDisplayName as string) || (v.authorUsername as string) || `${String(v.authorAddress || "0x????").slice(0, 8)}…`;
+                            const voucherScore = v.score as number;
+                            return (
+                              <div
+                                key={i}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  padding: "10px 12px",
+                                  background: SURFACE2,
+                                  borderRadius: 8,
+                                  border: `1px solid ${BORDER}`,
+                                }}
+                              >
+                                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                  <div
+                                    style={{
+                                      width: 28,
+                                      height: 28,
+                                      borderRadius: "50%",
+                                      background: `linear-gradient(135deg, #0052FF, #7B61FF)`,
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      fontSize: 11,
+                                      fontWeight: 700,
+                                      color: "#fff",
+                                    }}
+                                  >
+                                    {voucherName[0]?.toUpperCase() || "?"}
+                                  </div>
+                                  <span style={{ fontSize: 13, color: "#fff", fontWeight: 500 }}>{voucherName}</span>
+                                </div>
+                                {voucherScore && (
+                                  <span style={{ fontSize: 12, fontWeight: 700, color: "#6B9FFF" }}>{voucherScore}</span>
+                                )}
+                              </div>
+                            );
+                          })
+                        : <p style={{ fontSize: 13, color: MUTED }}>No data available.</p>
+                      }
                     </div>
                   </div>
 
-                  {/* Divider */}
-                  <div style={{ borderTop: "1px solid var(--border)" }} />
+                  {/* Recent vouches received */}
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: MUTED2, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>
+                      Recent Vouches Received
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      {(vouches.received?.data?.slice(0, 3) ?? []).length > 0
+                        ? (vouches.received.data.slice(0, 3) as Array<Record<string, unknown>>).map((v, i) => {
+                            const voucherName = (v.authorDisplayName as string) || (v.authorUsername as string) || `${String(v.authorAddress || "0x????").slice(0, 8)}…`;
+                            const amount = weiToEth(String(v.stakeAmount || "0"));
+                            return (
+                              <div
+                                key={i}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  padding: "10px 12px",
+                                  background: SURFACE2,
+                                  borderRadius: 8,
+                                  border: `1px solid ${BORDER}`,
+                                }}
+                              >
+                                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                  <div
+                                    style={{
+                                      width: 28,
+                                      height: 28,
+                                      borderRadius: "50%",
+                                      background: "linear-gradient(135deg, #00A86B, #00FF94)",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      fontSize: 11,
+                                      fontWeight: 700,
+                                      color: "#fff",
+                                    }}
+                                  >
+                                    {voucherName[0]?.toUpperCase() || "?"}
+                                  </div>
+                                  <span style={{ fontSize: 13, color: "#fff", fontWeight: 500 }}>{voucherName}</span>
+                                </div>
+                                {amount !== "0" && (
+                                  <span style={{ fontSize: 12, color: GREEN, fontWeight: 600 }}>{amount} ETH</span>
+                                )}
+                              </div>
+                            );
+                          })
+                        : <p style={{ fontSize: 13, color: MUTED }}>No recent vouches.</p>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div
+                style={{
+                  background: SURFACE,
+                  border: `1px solid ${BORDER}`,
+                  borderRadius: 16,
+                  padding: "28px 24px",
+                  textAlign: "center",
+                }}
+              >
+                <div
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 14,
+                    background: "rgba(0,82,255,0.1)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#6B9FFF",
+                    margin: "0 auto 14px",
+                  }}
+                >
+                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
+                  </svg>
+                </div>
+                <p style={{ fontSize: 14, fontWeight: 600, color: "#fff", marginBottom: 6 }}>No vouches yet</p>
+                <p style={{ fontSize: 13, color: MUTED, maxWidth: 400, margin: "0 auto" }}>
+                  Getting vouched by credible wallets is the fastest way to grow your score.
+                </p>
+              </div>
+            )}
 
-                  {/* Score display section */}
-                  <div className="px-6 pt-5 pb-6 relative overflow-hidden">
-                    {/* Background watermark */}
-                    <div
-                      className="absolute right-0 bottom-0 leading-none select-none pointer-events-none"
+            {/* ── Section D: Upgrade Gate ── */}
+            <div
+              style={{
+                background: SURFACE,
+                border: `1px solid rgba(0,82,255,0.4)`,
+                borderRadius: 16,
+                padding: "28px 24px",
+                position: "relative",
+                overflow: "hidden",
+                boxShadow: "0 0 40px rgba(0,82,255,0.08)",
+              }}
+            >
+              {/* Glow */}
+              <div
+                aria-hidden
+                style={{
+                  position: "absolute",
+                  bottom: -60,
+                  right: -60,
+                  width: 300,
+                  height: 300,
+                  borderRadius: "50%",
+                  background: "radial-gradient(circle, rgba(0,82,255,0.15) 0%, transparent 70%)",
+                  pointerEvents: "none",
+                }}
+              />
+              <div style={{ position: "relative", zIndex: 1 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: "#6B9FFF", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 8 }}>
+                  Upgrade
+                </div>
+                <h3 style={{ fontSize: 20, fontWeight: 800, color: "#fff", letterSpacing: "-0.5px", marginBottom: 16 }}>
+                  Unlock Weekly Coaching
+                </h3>
+
+                {/* Feature pills */}
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
+                  {["Weekly Brief", "Matchmaker", "Vouch ROI", "Score Simulator"].map((feat) => (
+                    <span
+                      key={feat}
                       style={{
-                        fontSize: "7.5rem",
-                        fontWeight: 800,
-                        color: "rgba(255,255,255,0.04)",
-                        letterSpacing: "-4px",
-                        lineHeight: 1,
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: "#6B9FFF",
+                        background: "rgba(0,82,255,0.12)",
+                        border: "1px solid rgba(0,82,255,0.25)",
+                        padding: "6px 12px",
+                        borderRadius: 20,
                       }}
                     >
-                      {profile.score}
-                    </div>
-                    {/* Ethos lines bg */}
-                    <div className="absolute right-5 bottom-4 opacity-[0.06] pointer-events-none text-white">
-                      <EthosLines size={28} />
-                    </div>
-
-                    <div className="relative z-10">
-                      <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>
-                        {tier.label}
-                      </p>
-                      <div className="flex items-center gap-3">
-                        <span
-                          className="text-5xl font-bold"
-                          style={{ color: "rgba(255,255,255,0.55)", letterSpacing: "-2px" }}
-                        >
-                          {profile.score}
-                        </span>
-                        <EthosLines size={22} />
-                      </div>
-                      {profile.links?.scoreBreakdown && (
-                        <a
-                          href={profile.links.scoreBreakdown}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 mt-2 text-[12px] transition-colors hover:underline"
-                          style={{ color: "var(--blue)" }}
-                        >
-                          Score breakdown
-                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-                          </svg>
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* CENTER: AI Analysis */}
-                <div className="space-y-4">
-                  {/* Top action */}
-                  <div
-                    className="rounded-xl p-5"
-                    style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-                  >
-                    <p className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--text-3)" }}>
-                      AI Coach · Top Action Today
-                    </p>
-                    <div className="flex items-start gap-3">
-                      <div
-                        className="shrink-0 rounded-lg p-2 mt-0.5"
-                        style={{ background: "var(--blue-dim)" }}
-                      >
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{ color: "var(--blue)" }}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
-                        </svg>
-                      </div>
-                      <p className="text-[14px] leading-relaxed" style={{ color: "rgba(255,255,255,0.7)" }}>
-                        {getTopAction(profile, vouches)}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Stats grid */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div
-                      className="rounded-xl p-4"
-                      style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-                    >
-                      <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--text-3)" }}>Reviews</p>
-                      <p className="text-2xl font-bold text-white">{totalReviews}</p>
-                      <p className="text-[12px] mt-0.5" style={{ color: "var(--green)" }}>
-                        {profile.stats.review.received.positive} positive
-                      </p>
-                    </div>
-                    <div
-                      className="rounded-xl p-4"
-                      style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-                    >
-                      <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--text-3)" }}>Vouches In</p>
-                      <p className="text-2xl font-bold text-white">{profile.stats.vouch.received.count}</p>
-                      <p className="text-[12px] mt-0.5" style={{ color: "var(--blue)" }}>
-                        {weiToEth(profile.stats.vouch.received.amountWeiTotal)} ETH
-                      </p>
-                    </div>
-                    <div
-                      className="rounded-xl p-4"
-                      style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-                    >
-                      <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--text-3)" }}>Vouches Out</p>
-                      <p className="text-2xl font-bold text-white">{profile.stats.vouch.given.count}</p>
-                      <p className="text-[12px] mt-0.5" style={{ color: "var(--blue)" }}>
-                        {weiToEth(profile.stats.vouch.given.amountWeiTotal)} ETH
-                      </p>
-                    </div>
-                    <div
-                      className="rounded-xl p-4"
-                      style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-                    >
-                      <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--text-3)" }}>Mutual (3,3)</p>
-                      <p className="text-2xl font-bold text-white">{vouches?.mutual?.data?.length ?? "—"}</p>
-                      <p className="text-[12px] mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>reciprocal</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* RIGHT: Highlights */}
-                <div
-                  className="rounded-xl p-5"
-                  style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-                >
-                  <p className="text-[13px] font-bold text-white mb-4">Highlights</p>
-
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ color: "var(--text-3)" }}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904" />
-                        </svg>
-                        <span className="text-[13px]" style={{ color: "rgba(255,255,255,0.55)" }}>Reviews</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[13px] font-semibold text-white">{totalReviews}</span>
-                        {positiveRate > 0 && (
-                          <span className="text-[11px] font-bold rounded px-1.5 py-0.5" style={{ background: "var(--green-dim)", color: "var(--green)" }}>
-                            {positiveRate}% pos.
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ color: "var(--text-3)" }}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
-                        </svg>
-                        <span className="text-[13px]" style={{ color: "rgba(255,255,255,0.55)" }}>Credible vouchers</span>
-                      </div>
-                      <span className="text-[13px] font-semibold text-white">{profile.stats.vouch.received.count}</span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ color: "var(--text-3)" }}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
-                        </svg>
-                        <span className="text-[13px]" style={{ color: "rgba(255,255,255,0.55)" }}>Vouched in others</span>
-                      </div>
-                      <span className="text-[13px] font-semibold text-white">
-                        {weiToEth(profile.stats.vouch.given.amountWeiTotal) === "0" ? "$0.00" : `${weiToEth(profile.stats.vouch.given.amountWeiTotal)} ETH`}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ color: "var(--text-3)" }}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
-                        </svg>
-                        <span className="text-[13px]" style={{ color: "rgba(255,255,255,0.55)" }}>Contributor XP</span>
-                      </div>
-                      <span className="text-[13px] font-semibold" style={{ color: "var(--amber)" }}>
-                        {profile.xpTotal?.toLocaleString() ?? "—"}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ color: "var(--text-3)" }}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
-                        </svg>
-                        <span className="text-[13px]" style={{ color: "rgba(255,255,255,0.55)" }}>Influence factor</span>
-                      </div>
-                      <span className="text-[13px] font-semibold text-white">
-                        {profile.influenceFactor?.toFixed(0) ?? "—"}
-                      </span>
-                    </div>
-
-                    <div
-                      className="pt-3"
-                      style={{ borderTop: "1px solid var(--border)" }}
-                    >
-                      <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--text-3)" }}>
-                        Score Tier
-                      </p>
-                      <span
-                        className="inline-block text-[12px] font-bold rounded-md px-2.5 py-1"
-                        style={{ background: "var(--surface-2)", color: tier.color }}
-                      >
-                        {tier.label}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Score bar */}
-              <div
-                className="rounded-xl p-5"
-                style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-[13px] font-semibold text-white">Credibility Score Progress</p>
-                  <p className="text-[12px]" style={{ color: "rgba(255,255,255,0.35)" }}>
-                    {profile.score} / 2,800
-                  </p>
-                </div>
-                <div className="h-2 rounded-full overflow-hidden" style={{ background: "var(--surface-2)" }}>
-                  <div
-                    className="h-full rounded-full transition-all duration-1000"
-                    style={{
-                      width: `${Math.min((profile.score / 2800) * 100, 100)}%`,
-                      background: "var(--blue)",
-                    }}
-                  />
-                </div>
-                <div className="flex justify-between mt-2">
-                  {["Untrusted", "Questionable", "Known", "Reputable", "Exemplary"].map((label, i) => (
-                    <span key={label} className="text-[10px]" style={{ color: "var(--text-3)" }}>{label}</span>
+                      {feat}
+                    </span>
                   ))}
                 </div>
-              </div>
 
-              {/* Upgrade CTA */}
-              <div
-                className="rounded-xl p-6 text-center relative overflow-hidden"
-                style={{ background: "var(--surface)", border: "1px solid var(--blue)" }}
-              >
-                <div
-                  className="absolute inset-0 pointer-events-none"
-                  style={{ background: "radial-gradient(ellipse 500px 200px at 50% 100%, rgba(75,158,255,0.07), transparent)" }}
-                />
-                <div className="relative z-10">
-                  <h3 className="text-[17px] font-bold text-white">
-                    Want <span style={{ color: "var(--blue)" }}>Weekly Coaching?</span>
-                  </h3>
-                  <p className="mx-auto mt-2 max-w-lg text-[14px]" style={{ color: "rgba(255,255,255,0.45)" }}>
-                    Unlock Weekly Briefs, Reputation Matchmaker, Vouch ROI Analyzer, and Score Simulator.
-                  </p>
-                  <button className="btn-blue mt-5 px-7 py-2.5 text-[14px]">
-                    Upgrade to Core Coaching — $10/mo
+                <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+                  <div>
+                    <div style={{ fontSize: 32, fontWeight: 800, color: "#fff", letterSpacing: "-1.5px", lineHeight: 1 }}>
+                      $10<span style={{ fontSize: 14, fontWeight: 500, color: MUTED }}>/month</span>
+                    </div>
+                    <div style={{ fontSize: 12, color: MUTED2, marginTop: 4 }}>
+                      Pay with USDC, ETH, or BNKR on Base
+                    </div>
+                  </div>
+                  <button
+                    style={{
+                      background: BLUE,
+                      color: "#fff",
+                      fontWeight: 700,
+                      fontSize: 14,
+                      padding: "12px 24px",
+                      borderRadius: 10,
+                      cursor: "pointer",
+                      border: "none",
+                      transition: "background 0.15s",
+                      whiteSpace: "nowrap",
+                    }}
+                    onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "#1A65FF")}
+                    onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = BLUE)}
+                  >
+                    Upgrade to Core Coaching
                   </button>
-                  <p className="mt-2 text-[11px]" style={{ color: "var(--text-3)" }}>
-                    Pay with USDC, ETH, or BNKR on Base
-                  </p>
                 </div>
               </div>
-
             </div>
-          );
-        })()}
-      </div>
+          </>
+        )}
+      </main>
     </div>
   );
 }
