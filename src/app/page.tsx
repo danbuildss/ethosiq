@@ -9,11 +9,60 @@ const BG = "#0A0A0A";
 const SURFACE = "#111111";
 const SURFACE2 = "#161616";
 const BORDER = "#1A1A1A";
-const BLUE = "#0052FF";
+const BLUE = "#4D8EFF";
 const GREEN = "#00FF94";
 const AMBER = "#F59E0B";
 const MUTED = "rgba(255,255,255,0.45)";
 const MUTED2 = "rgba(255,255,255,0.25)";
+
+/* ── Global responsive styles ───────────────────────────────────── */
+const GlobalStyles = () => (
+  <style>{`
+    @media (max-width: 768px) {
+      .hero-inner { flex-direction: column !important; text-align: center; }
+      .features-grid { grid-template-columns: 1fr !important; }
+      .stats-grid { grid-template-columns: 1fr !important; }
+      .pricing-grid { grid-template-columns: 1fr !important; }
+      .how-grid { grid-template-columns: 1fr !important; }
+      .nav-links { display: none !important; }
+      .hero-widget { display: none !important; }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .animate-fade-up { animation: fadeUp 0.6s ease forwards; }
+    .animate-fade-up-delay-1 { animation: fadeUp 0.6s ease 0.1s forwards; opacity: 0; }
+    .animate-fade-up-delay-2 { animation: fadeUp 0.6s ease 0.2s forwards; opacity: 0; }
+    .animate-fade-up-delay-3 { animation: fadeUp 0.6s ease 0.3s forwards; opacity: 0; }
+    .animate-scale-in { animation: scaleIn 0.5s ease forwards; }
+    .animate-pulse-slow { animation: pulse 3s ease-in-out infinite; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    @keyframes shimmer {
+      0% { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+    .score-shimmer {
+      background: linear-gradient(90deg, #4D8EFF 0%, #a5c4ff 50%, #4D8EFF 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: shimmer 3s linear infinite;
+    }
+  `}</style>
+);
 
 /* ── Dot-grid overlay ───────────────────────────────────────────── */
 function DotGrid() {
@@ -61,7 +110,7 @@ function Navbar() {
         style={{
           maxWidth: 1100,
           margin: "0 auto",
-          padding: "0 24px",
+          padding: "0 20px",
           height: 60,
           display: "flex",
           alignItems: "center",
@@ -82,17 +131,17 @@ function Navbar() {
           }}
         >
           <LogoMark size={18} />
-          Ethos&nbsp;<span style={{ color: BLUE }}>IQ</span>
+          <span>Ethos<span style={{ color: BLUE }}>IQ</span></span>
         </Link>
 
-        {/* Nav links — hidden on small screens */}
+        {/* Nav links */}
         <div
+          className="nav-links"
           style={{
             display: "flex",
             gap: 32,
             alignItems: "center",
           }}
-          className="desktop-nav"
         >
           {["How It Works", "Features", "Pricing", "FAQ"].map((item) => (
             <a
@@ -126,7 +175,7 @@ function Navbar() {
             textDecoration: "none",
             transition: "background 0.15s",
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "#1A65FF")}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "#6BA3FF")}
           onMouseLeave={(e) => (e.currentTarget.style.background = BLUE)}
         >
           Check Your Score
@@ -142,12 +191,12 @@ function ScoreWidget() {
     <div
       style={{
         background: SURFACE,
-        border: `1px solid rgba(0,82,255,0.35)`,
+        border: `1px solid rgba(77,142,255,0.35)`,
         borderRadius: 16,
         padding: "28px 24px",
         width: "100%",
         maxWidth: 320,
-        boxShadow: "0 0 40px rgba(0,82,255,0.18), 0 0 80px rgba(0,82,255,0.06)",
+        boxShadow: "0 0 40px rgba(77,142,255,0.18), 0 0 80px rgba(77,142,255,0.06)",
         position: "relative",
         overflow: "hidden",
       }}
@@ -162,7 +211,7 @@ function ScoreWidget() {
           width: 160,
           height: 160,
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(0,82,255,0.25) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(77,142,255,0.25) 0%, transparent 70%)",
           pointerEvents: "none",
         }}
       />
@@ -175,7 +224,7 @@ function ScoreWidget() {
               width: 40,
               height: 40,
               borderRadius: "50%",
-              background: "linear-gradient(135deg, #0052FF, #7B61FF)",
+              background: "linear-gradient(135deg, #4D8EFF, #7B61FF)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -188,18 +237,18 @@ function ScoreWidget() {
           </div>
           <div>
             <div style={{ fontWeight: 700, fontSize: 14, color: "#fff" }}>vitalik.eth</div>
-            <div style={{ fontSize: 12, color: MUTED }}>0x1234…abcd</div>
+            <div style={{ fontSize: 12, color: MUTED }}>0x1234&hellip;abcd</div>
           </div>
         </div>
         <span
           style={{
-            background: "rgba(0,82,255,0.18)",
+            background: "rgba(77,142,255,0.18)",
             color: "#6B9FFF",
             fontSize: 11,
             fontWeight: 700,
             padding: "4px 10px",
             borderRadius: 20,
-            border: "1px solid rgba(0,82,255,0.3)",
+            border: "1px solid rgba(77,142,255,0.3)",
           }}
         >
           Reputable
@@ -284,7 +333,7 @@ function Hero() {
   return (
     <section
       style={{
-        minHeight: "100vh",
+        minHeight: "92vh",
         background: BG,
         position: "relative",
         display: "flex",
@@ -304,7 +353,7 @@ function Hero() {
           width: 600,
           height: 600,
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(0,82,255,0.15) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(77,142,255,0.15) 0%, transparent 70%)",
           pointerEvents: "none",
           zIndex: 1,
         }}
@@ -318,35 +367,35 @@ function Hero() {
           width: 500,
           height: 500,
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(0,82,255,0.1) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(77,142,255,0.1) 0%, transparent 70%)",
           pointerEvents: "none",
           zIndex: 1,
         }}
       />
 
       <div
+        className="hero-inner"
         style={{
           position: "relative",
           zIndex: 2,
           maxWidth: 1100,
           margin: "0 auto",
-          padding: "100px 24px",
-          display: "grid",
-          gridTemplateColumns: "1fr auto",
+          padding: "80px 20px",
+          display: "flex",
           gap: 60,
           alignItems: "center",
           width: "100%",
         }}
       >
         {/* Left: copy */}
-        <div style={{ maxWidth: 560 }}>
+        <div style={{ maxWidth: 560, flex: 1 }}>
           <div
             style={{
               display: "inline-flex",
               alignItems: "center",
               gap: 8,
-              background: "rgba(0,82,255,0.1)",
-              border: "1px solid rgba(0,82,255,0.25)",
+              background: "rgba(77,142,255,0.1)",
+              border: "1px solid rgba(77,142,255,0.25)",
               borderRadius: 20,
               padding: "6px 14px",
               marginBottom: 28,
@@ -359,8 +408,9 @@ function Hero() {
           </div>
 
           <h1
+            className="animate-fade-up"
             style={{
-              fontSize: "clamp(40px, 6vw, 68px)",
+              fontSize: "clamp(36px, 5vw, 56px)",
               fontWeight: 800,
               lineHeight: 1.08,
               color: "#fff",
@@ -384,6 +434,7 @@ function Hero() {
           </h1>
 
           <p
+            className="animate-fade-up-delay-1"
             style={{
               fontSize: 18,
               color: MUTED,
@@ -395,7 +446,7 @@ function Hero() {
             EthosIQ analyzes your on-chain credibility score, identifies every factor holding you back, and gives you one action per day to improve it.
           </p>
 
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <div className="animate-fade-up-delay-2" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <Link
               href="/app"
               style={{
@@ -412,7 +463,7 @@ function Hero() {
                 gap: 8,
               }}
             >
-              Check Your Score — Free
+              Check Your Score, Free
               <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
               </svg>
@@ -445,10 +496,12 @@ function Hero() {
 
         {/* Right: widget */}
         <div
+          className="hero-widget animate-fade-up-delay-3"
           style={{
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
+            flexShrink: 0,
           }}
         >
           <ScoreWidget />
@@ -471,26 +524,30 @@ function Partners() {
   return (
     <section
       style={{
-        background: SURFACE,
-        borderTop: `1px solid ${BORDER}`,
-        borderBottom: `1px solid ${BORDER}`,
-        padding: "32px 24px",
+        background: "#0F0F0F",
+        borderTop: "1px solid #1E1E1E",
+        borderBottom: "1px solid #1E1E1E",
+        padding: "0 20px",
+        height: 70,
+        display: "flex",
+        alignItems: "center",
       }}
     >
       <div
         style={{
           maxWidth: 1100,
           margin: "0 auto",
+          width: "100%",
           display: "flex",
           flexWrap: "wrap",
           alignItems: "center",
           justifyContent: "center",
-          gap: 40,
+          gap: 16,
         }}
       >
         <span
           style={{
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: 600,
             color: MUTED2,
             textTransform: "uppercase",
@@ -503,21 +560,23 @@ function Partners() {
           <div
             key={logo.alt}
             style={{
+              background: "#1A1A1A",
+              border: "1px solid #272727",
+              borderRadius: 8,
+              padding: "10px 20px",
               display: "flex",
               alignItems: "center",
-              opacity: 0.5,
-              transition: "opacity 0.15s",
+              gap: 8,
             }}
-            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.opacity = "0.85")}
-            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.opacity = "0.5")}
           >
             <Image
               src={logo.src}
               alt={logo.alt}
-              width={80}
-              height={28}
-              style={{ objectFit: "contain", maxHeight: 28 }}
+              width={18}
+              height={18}
+              style={{ objectFit: "contain", filter: "brightness(0) invert(1)", height: 18, width: "auto" }}
             />
+            <span style={{ fontSize: 13, color: "#fff", fontWeight: 500 }}>{logo.alt}</span>
           </div>
         ))}
       </div>
@@ -530,7 +589,7 @@ function HowItWorks() {
   const steps = [
     {
       icon: (
-        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h11m5-7h-2a2 2 0 0 0-2 2v0a2 2 0 0 0 2 2h2v-4Z" />
         </svg>
       ),
@@ -540,23 +599,23 @@ function HowItWorks() {
     },
     {
       icon: (
-        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
         </svg>
       ),
       num: "02",
       title: "Analyze Score",
-      desc: "We pull your Ethos profile — reviews, vouches, credibility — and break it down factor by factor.",
+      desc: "We pull your Ethos profile, reviews, vouches, credibility, and break it down factor by factor.",
     },
     {
       icon: (
-        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
         </svg>
       ),
       num: "03",
       title: "Get Your Action Plan",
-      desc: "Your AI coach gives you one concrete action today — and tracks your progress over time.",
+      desc: "Your AI coach gives you one concrete action today and tracks your progress over time.",
     },
   ];
 
@@ -565,14 +624,14 @@ function HowItWorks() {
       id="how-it-works"
       style={{
         background: BG,
-        padding: "100px 24px",
+        padding: "80px 20px",
         position: "relative",
         overflow: "hidden",
       }}
     >
       <DotGrid />
       <div style={{ position: "relative", zIndex: 1, maxWidth: 1100, margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: 64 }}>
+        <div style={{ textAlign: "center", marginBottom: 56 }}>
           <p style={{ fontSize: 12, fontWeight: 600, color: "#6B9FFF", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 12 }}>
             Simple by design
           </p>
@@ -585,6 +644,7 @@ function HowItWorks() {
         </div>
 
         <div
+          className="how-grid"
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
@@ -598,7 +658,7 @@ function HowItWorks() {
                 background: SURFACE,
                 border: `1px solid ${BORDER}`,
                 borderRadius: 16,
-                padding: "32px 28px",
+                padding: "28px",
                 position: "relative",
               }}
             >
@@ -609,7 +669,7 @@ function HowItWorks() {
                   right: 24,
                   fontSize: 13,
                   fontWeight: 700,
-                  color: "rgba(0,82,255,0.3)",
+                  color: "rgba(77,142,255,0.3)",
                   fontFamily: "Georgia, serif",
                   fontStyle: "italic",
                 }}
@@ -618,10 +678,10 @@ function HowItWorks() {
               </div>
               <div
                 style={{
-                  width: 52,
-                  height: 52,
+                  width: 40,
+                  height: 40,
                   borderRadius: 12,
-                  background: "rgba(0,82,255,0.12)",
+                  background: "rgba(77,142,255,0.12)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -672,7 +732,7 @@ function MiniDashboard({ type }: { type: "score" | "coach" | "vouch" | "brief" }
       <div style={{ background: "#0D0D0D", borderRadius: 10, padding: "14px", height: 130 }}>
         <div style={{ fontSize: 10, color: MUTED2, marginBottom: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>Today&apos;s Action</div>
         <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-          <div style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(0,82,255,0.15)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(77,142,255,0.15)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#6B9FFF" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
             </svg>
@@ -697,12 +757,12 @@ function MiniDashboard({ type }: { type: "score" | "coach" | "vouch" | "brief" }
       <div style={{ background: "#0D0D0D", borderRadius: 10, padding: "14px", height: 130 }}>
         <div style={{ fontSize: 10, color: MUTED2, marginBottom: 8, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>Vouch Network</div>
         {[
-          { name: "0xd4e1…2a9f", score: 1980, mutual: true },
+          { name: "0xd4e1&hellip;2a9f", score: 1980, mutual: true },
           { name: "vitalik.eth", score: 2100, mutual: false },
-          { name: "0xa7c3…f102", score: 1560, mutual: true },
+          { name: "0xa7c3&hellip;f102", score: 1560, mutual: true },
         ].map((v) => (
           <div key={v.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 7 }}>
-            <span style={{ fontSize: 11, color: MUTED, fontFamily: "monospace" }}>{v.name}</span>
+            <span style={{ fontSize: 11, color: MUTED, fontFamily: "monospace" }} dangerouslySetInnerHTML={{ __html: v.name }} />
             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
               <span style={{ fontSize: 11, color: "#6B9FFF", fontWeight: 600 }}>{v.score}</span>
               {v.mutual && <span style={{ fontSize: 9, color: GREEN, fontWeight: 700, background: "rgba(0,255,148,0.1)", padding: "2px 5px", borderRadius: 4 }}>3,3</span>}
@@ -715,7 +775,7 @@ function MiniDashboard({ type }: { type: "score" | "coach" | "vouch" | "brief" }
   // brief
   return (
     <div style={{ background: "#0D0D0D", borderRadius: 10, padding: "14px", height: 130 }}>
-      <div style={{ fontSize: 10, color: MUTED2, marginBottom: 6, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>Weekly Brief — Mon</div>
+      <div style={{ fontSize: 10, color: MUTED2, marginBottom: 6, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>Weekly Brief: Mon</div>
       <div style={{ fontSize: 12, fontWeight: 700, color: "#fff", marginBottom: 6 }}>Your score rose +42 this week</div>
       <div style={{ display: "flex", gap: 8 }}>
         {[
@@ -751,7 +811,7 @@ function Features() {
     {
       type: "vouch" as const,
       title: "Vouch Network",
-      desc: "See who's vouching for you and who you should vouch for.",
+      desc: "See who&apos;s vouching for you and who you should vouch for.",
     },
     {
       type: "brief" as const,
@@ -765,13 +825,13 @@ function Features() {
       id="features"
       style={{
         background: SURFACE,
-        padding: "100px 24px",
+        padding: "80px 20px",
         borderTop: `1px solid ${BORDER}`,
         borderBottom: `1px solid ${BORDER}`,
       }}
     >
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: 64 }}>
+        <div style={{ textAlign: "center", marginBottom: 56 }}>
           <p style={{ fontSize: 12, fontWeight: 600, color: "#6B9FFF", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 12 }}>
             What you get
           </p>
@@ -782,15 +842,17 @@ function Features() {
         </div>
 
         <div
+          className="features-grid"
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gridTemplateColumns: "repeat(2, 1fr)",
             gap: 20,
           }}
         >
           {items.map((item) => (
             <div
               key={item.type}
+              className="animate-scale-in"
               style={{
                 background: BG,
                 border: `1px solid ${BORDER}`,
@@ -798,14 +860,14 @@ function Features() {
                 padding: "24px",
                 transition: "border-color 0.2s",
               }}
-              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.borderColor = "rgba(0,82,255,0.4)")}
+              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.borderColor = "rgba(77,142,255,0.4)")}
               onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.borderColor = BORDER)}
             >
               <MiniDashboard type={item.type} />
               <h3 style={{ fontSize: 17, fontWeight: 700, color: "#fff", marginTop: 20, marginBottom: 8 }}>
                 {item.title}
               </h3>
-              <p style={{ fontSize: 14, color: MUTED, lineHeight: 1.6 }}>{item.desc}</p>
+              <p style={{ fontSize: 14, color: MUTED, lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: item.desc }} />
             </div>
           ))}
         </div>
@@ -826,7 +888,7 @@ function Stats() {
     <section
       style={{
         background: BG,
-        padding: "100px 24px",
+        padding: "60px 20px",
         position: "relative",
         overflow: "hidden",
       }}
@@ -842,18 +904,19 @@ function Stats() {
           width: 600,
           height: 300,
           borderRadius: "50%",
-          background: "radial-gradient(ellipse, rgba(0,82,255,0.08) 0%, transparent 70%)",
+          background: "radial-gradient(ellipse, rgba(77,142,255,0.08) 0%, transparent 70%)",
           pointerEvents: "none",
         }}
       />
       <div
+        className="stats-grid"
         style={{
           position: "relative",
           zIndex: 1,
           maxWidth: 900,
           margin: "0 auto",
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+          gridTemplateColumns: "repeat(3, 1fr)",
           gap: 40,
           textAlign: "center",
         }}
@@ -861,10 +924,10 @@ function Stats() {
         {stats.map((s) => (
           <div key={s.label}>
             <div
+              className="score-shimmer"
               style={{
-                fontSize: "clamp(40px, 6vw, 60px)",
+                fontSize: "clamp(36px, 5vw, 52px)",
                 fontWeight: 800,
-                color: "#fff",
                 letterSpacing: "-2px",
                 fontStyle: "italic",
                 fontFamily: "Georgia, serif",
@@ -880,20 +943,196 @@ function Stats() {
   );
 }
 
+/* ── Free Trial Section ──────────────────────────────────────────── */
+function FreeTrial() {
+  const [code, setCode] = useState("");
+  const [activated, setActivated] = useState(false);
+
+  const handleActivate = () => {
+    if (code.trim()) {
+      setActivated(true);
+    }
+  };
+
+  return (
+    <section
+      style={{
+        background: SURFACE,
+        padding: "80px 20px",
+        borderTop: `1px solid ${BORDER}`,
+      }}
+    >
+      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <div
+          style={{
+            border: "1px solid rgba(77,142,255,0.3)",
+            background: "#0F0F0F",
+            borderRadius: 16,
+            padding: "48px 40px",
+            textAlign: "center",
+          }}
+        >
+          <h2
+            style={{
+              fontSize: 28,
+              fontWeight: 800,
+              color: "#fff",
+              letterSpacing: "-1px",
+              marginBottom: 12,
+            }}
+          >
+            Start Your Free Trial
+          </h2>
+          <p style={{ fontSize: 15, color: MUTED, lineHeight: 1.65, maxWidth: 520, margin: "0 auto 32px" }}>
+            Get full access to all Core Coaching features for 7 days. No payment required. Use your trial code at checkout.
+          </p>
+
+          {activated ? (
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                background: "rgba(0,255,148,0.1)",
+                border: "1px solid rgba(0,255,148,0.3)",
+                borderRadius: 10,
+                padding: "14px 24px",
+                color: GREEN,
+                fontWeight: 700,
+                fontSize: 15,
+              }}
+            >
+              Code accepted! Your 7-day trial is active.
+            </div>
+          ) : (
+            <div
+              style={{
+                display: "flex",
+                gap: 10,
+                justifyContent: "center",
+                flexWrap: "wrap",
+                marginBottom: 16,
+              }}
+            >
+              <input
+                type="text"
+                placeholder="Enter trial code"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                style={{
+                  background: "#111",
+                  border: "1px solid #272727",
+                  borderRadius: 8,
+                  padding: "13px 16px",
+                  color: "#fff",
+                  fontSize: 14,
+                  width: "100%",
+                  maxWidth: 280,
+                  outline: "none",
+                }}
+              />
+              <button
+                onClick={handleActivate}
+                style={{
+                  background: BLUE,
+                  color: "#fff",
+                  fontWeight: 700,
+                  fontSize: 14,
+                  padding: "13px 24px",
+                  borderRadius: 8,
+                  border: "none",
+                  cursor: "pointer",
+                  transition: "background 0.15s",
+                }}
+                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "#6BA3FF")}
+                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = BLUE)}
+              >
+                Activate Trial
+              </button>
+            </div>
+          )}
+
+          <p style={{ fontSize: 13, color: MUTED, marginBottom: 8 }}>
+            Don&apos;t have a code? Share EthosIQ on X and DM{" "}
+            <a href="https://x.com/danbuildss" target="_blank" style={{ color: BLUE, textDecoration: "none" }}>
+              @danbuildss
+            </a>{" "}
+            for a code.
+          </p>
+          <p style={{ fontSize: 12, color: MUTED2 }}>One trial per wallet address.</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── Share & Earn Box ────────────────────────────────────────────── */
+function ShareEarn() {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText("https://ethosiq.vercel.app?ref=wallet").then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    });
+  };
+
+  return (
+    <div
+      style={{
+        background: "rgba(77,142,255,0.06)",
+        border: "1px solid rgba(77,142,255,0.2)",
+        borderRadius: 10,
+        padding: 16,
+        marginTop: 12,
+      }}
+    >
+      <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 6 }}>
+        Share your score, help a friend
+      </div>
+      <p style={{ fontSize: 13, color: MUTED, lineHeight: 1.6, marginBottom: 12 }}>
+        Share EthosIQ with your network. When 3 people sign up via your link, you get 30 days of Core Coaching free.
+      </p>
+      <button
+        onClick={handleCopy}
+        style={{
+          background: BLUE,
+          color: "#fff",
+          fontWeight: 600,
+          fontSize: 13,
+          padding: "10px 18px",
+          borderRadius: 8,
+          border: "none",
+          cursor: "pointer",
+          width: "100%",
+          transition: "background 0.15s",
+        }}
+        onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "#6BA3FF")}
+        onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = BLUE)}
+      >
+        {copied ? "Link Copied!" : "Copy My Share Link"}
+      </button>
+      <p style={{ fontSize: 11, color: MUTED2, marginTop: 8, textAlign: "center" }}>
+        Referral tracking coming soon
+      </p>
+    </div>
+  );
+}
+
 /* ── Pricing ─────────────────────────────────────────────────────── */
 function Pricing() {
   return (
     <section
       id="pricing"
       style={{
-        background: SURFACE,
-        padding: "100px 24px",
+        background: BG,
+        padding: "80px 20px",
         borderTop: `1px solid ${BORDER}`,
         borderBottom: `1px solid ${BORDER}`,
       }}
     >
       <div style={{ maxWidth: 900, margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: 64 }}>
+        <div style={{ textAlign: "center", marginBottom: 56 }}>
           <p style={{ fontSize: 12, fontWeight: 600, color: "#6B9FFF", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 12 }}>
             Pricing
           </p>
@@ -909,9 +1148,10 @@ function Pricing() {
 
         {/* Main plans */}
         <div
+          className="pricing-grid"
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gridTemplateColumns: "repeat(2, 1fr)",
             gap: 20,
             marginBottom: 32,
           }}
@@ -919,10 +1159,13 @@ function Pricing() {
           {/* Free */}
           <div
             style={{
-              background: BG,
+              background: SURFACE,
               border: `1px solid ${BORDER}`,
               borderRadius: 16,
               padding: "32px 28px",
+              maxWidth: 400,
+              width: "100%",
+              margin: "0 auto",
             }}
           >
             <div style={{ fontSize: 12, fontWeight: 600, color: MUTED2, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>
@@ -935,7 +1178,7 @@ function Pricing() {
             <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 32 }}>
               {[
                 "Ethos score analysis",
-                "AI Coach — top action daily",
+                "AI Coach: top action daily",
                 "Vouch network overview",
               ].map((feat) => (
                 <div key={feat} style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -964,17 +1207,21 @@ function Pricing() {
             >
               Get Started Free
             </Link>
+            <ShareEarn />
           </div>
 
           {/* Core Coaching */}
           <div
             style={{
-              background: BG,
-              border: `1px solid rgba(0,82,255,0.45)`,
+              background: SURFACE,
+              border: `1px solid rgba(77,142,255,0.45)`,
               borderRadius: 16,
               padding: "32px 28px",
               position: "relative",
-              boxShadow: "0 0 40px rgba(0,82,255,0.1)",
+              boxShadow: "0 0 40px rgba(77,142,255,0.1)",
+              maxWidth: 400,
+              width: "100%",
+              margin: "0 auto",
             }}
           >
             <div
@@ -1002,7 +1249,7 @@ function Pricing() {
             <div style={{ fontSize: 13, color: MUTED, marginBottom: 28 }}>Everything in Free, plus:</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 32 }}>
               {[
-                "Weekly Brief — every Monday",
+                "Weekly Brief: every Monday",
                 "Reputation Matchmaker",
                 "Vouch ROI Analyzer",
                 "Score Simulator",
@@ -1038,7 +1285,7 @@ function Pricing() {
         {/* Add-ons */}
         <div
           style={{
-            background: BG,
+            background: SURFACE,
             border: `1px solid ${BORDER}`,
             borderRadius: 16,
             padding: "28px",
@@ -1069,7 +1316,7 @@ function Pricing() {
               <div
                 key={addon.title}
                 style={{
-                  background: SURFACE,
+                  background: BG,
                   border: `1px solid ${BORDER}`,
                   borderRadius: 12,
                   padding: "20px",
@@ -1097,7 +1344,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Does this work for any wallet?",
-    a: "Yes — any EVM wallet that has an Ethos profile. If your wallet doesn't have one yet, EthosIQ will show you how to create it. Wallet age and activity do affect your starting score.",
+    a: "Yes. Any EVM wallet that has an Ethos profile. If your wallet does not have one yet, EthosIQ will show you how to create it. Wallet age and activity do affect your starting score.",
   },
   {
     q: "Is the free tier actually free?",
@@ -1109,7 +1356,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "What is the Score Simulator?",
-    a: "The Score Simulator lets you model hypothetical changes — 'What would my score be if I got 5 more vouches?' or 'What if I cleared that negative review?' — so you can prioritize actions with the biggest impact.",
+    a: "The Score Simulator lets you model hypothetical changes. For example: what would my score be if I got 5 more vouches? What if I cleared that negative review? This lets you prioritize actions with the biggest impact.",
   },
 ];
 
@@ -1120,15 +1367,16 @@ function FAQ() {
     <section
       id="faq"
       style={{
-        background: BG,
-        padding: "100px 24px",
+        background: SURFACE,
+        padding: "80px 20px",
         position: "relative",
         overflow: "hidden",
+        borderTop: `1px solid ${BORDER}`,
       }}
     >
       <DotGrid />
       <div style={{ position: "relative", zIndex: 1, maxWidth: 700, margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: 64 }}>
+        <div style={{ textAlign: "center", marginBottom: 56 }}>
           <p style={{ fontSize: 12, fontWeight: 600, color: "#6B9FFF", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 12 }}>
             FAQ
           </p>
@@ -1198,7 +1446,7 @@ function FinalCTA() {
     <section
       style={{
         background: `linear-gradient(135deg, #001433 0%, #001F5C 40%, #003399 70%, #001433 100%)`,
-        padding: "100px 24px",
+        padding: "64px 20px",
         position: "relative",
         overflow: "hidden",
       }}
@@ -1208,7 +1456,7 @@ function FinalCTA() {
         style={{
           position: "absolute",
           inset: 0,
-          backgroundImage: "radial-gradient(circle, rgba(0,82,255,0.12) 1px, transparent 1px)",
+          backgroundImage: "radial-gradient(circle, rgba(77,142,255,0.12) 1px, transparent 1px)",
           backgroundSize: "28px 28px",
           pointerEvents: "none",
         }}
@@ -1223,7 +1471,7 @@ function FinalCTA() {
           width: 700,
           height: 400,
           borderRadius: "50%",
-          background: "radial-gradient(ellipse, rgba(0,82,255,0.35) 0%, transparent 70%)",
+          background: "radial-gradient(ellipse, rgba(77,142,255,0.35) 0%, transparent 70%)",
           pointerEvents: "none",
         }}
       />
@@ -1266,7 +1514,7 @@ function FinalCTA() {
           onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.opacity = "0.9")}
           onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.opacity = "1")}
         >
-          Check Your Score — Free
+          Check Your Score, Free
           <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
           </svg>
@@ -1283,7 +1531,7 @@ function Footer() {
       style={{
         background: SURFACE,
         borderTop: `1px solid ${BORDER}`,
-        padding: "24px",
+        padding: "24px 20px",
       }}
     >
       <div
@@ -1299,11 +1547,23 @@ function Footer() {
       >
         <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#fff", fontWeight: 700, fontSize: 15 }}>
           <LogoMark size={16} />
-          Ethos&nbsp;<span style={{ color: BLUE }}>IQ</span>
+          <span>Ethos<span style={{ color: BLUE }}>IQ</span></span>
         </div>
-        <p style={{ fontSize: 13, color: MUTED2 }}>
-          © {new Date().getFullYear()} EthosIQ. Not affiliated with Ethos Protocol.
-        </p>
+        <div style={{ textAlign: "center" }}>
+          <p style={{ fontSize: 13, color: MUTED2 }}>
+            &copy; {new Date().getFullYear()} EthosIQ. Not affiliated with Ethos Protocol.
+          </p>
+          <p style={{ fontSize: 13, color: MUTED2, marginTop: 4 }}>
+            Built by{" "}
+            <a
+              href="https://x.com/danbuildss"
+              target="_blank"
+              style={{ color: "#4D8EFF", textDecoration: "none" }}
+            >
+              @danbuildss
+            </a>
+          </p>
+        </div>
         <div style={{ display: "flex", gap: 20 }}>
           {["Privacy", "Terms", "Discord"].map((link) => (
             <a key={link} href="#" style={{ fontSize: 13, color: MUTED2, textDecoration: "none" }}>
@@ -1320,12 +1580,14 @@ function Footer() {
 export default function Home() {
   return (
     <div style={{ background: BG, minHeight: "100vh" }}>
+      <GlobalStyles />
       <Navbar />
       <Hero />
       <Partners />
       <HowItWorks />
       <Features />
       <Stats />
+      <FreeTrial />
       <Pricing />
       <FAQ />
       <FinalCTA />
