@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 
 import { usePrivy } from "@privy-io/react-auth";
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 /* ─── Types ───────────────────────────────────────────────────────── */
@@ -137,12 +138,18 @@ function AppNavbar({
   score,
   login,
   logout,
+  searchQuery,
+  setSearchQuery,
+  handleSearch,
 }: {
   authenticated: boolean;
   walletAddress?: string;
   score?: number;
   login: () => void;
   logout: () => void;
+  searchQuery: string;
+  setSearchQuery: (v: string) => void;
+  handleSearch: (e: React.FormEvent) => void;
 }) {
   return (
     <nav
@@ -183,6 +190,28 @@ function AppNavbar({
           <LogoMark size={16} />
           Ethos<span style={{ color: "#4D8EFF" }}>IQ</span>
         </Link>
+
+        {/* Search form */}
+        <form onSubmit={handleSearch} style={{ display: "flex", gap: 6, alignItems: "center" }}>
+          <input
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Search wallet or ENS..."
+            style={{
+              background: "#161616",
+              border: "1px solid #2A2A2A",
+              borderRadius: 8,
+              color: "#fff",
+              padding: "7px 12px",
+              fontSize: 13,
+              outline: "none",
+              width: 200,
+            }}
+          />
+          <button type="submit" style={{ background: "#4D8EFF", border: "none", borderRadius: 8, padding: "7px 12px", cursor: "pointer", color: "#fff", fontSize: 13, fontWeight: 600 }}>
+            Go
+          </button>
+        </form>
 
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: "auto" }}>
           {/* Powered by badge */}
@@ -303,6 +332,47 @@ function StatCard({
   );
 }
 
+/* ─── Core Feature Helpers ──────────────────────────────────────── */
+function generateWeeklyBrief(profile: any): string {
+  if (!profile) return "";
+  const total = (profile.stats?.review?.received?.positive || 0) + (profile.stats?.review?.received?.negative || 0) + (profile.stats?.review?.received?.neutral || 0);
+  const vouches = profile.stats?.vouch?.received?.count || 0;
+  return `Score: ${profile.score.toLocaleString()} (${getScoreTier(profile.score).label}). ${total} total reviews, ${vouches} vouches received. ${profile.stats?.review?.received?.positive || 0} positive reviews. Focus this week: grow vouch count.`;
+}
+
+function generateMatchmaker(profile: any, vouches: any): string {
+  if (!profile) return "";
+  const mutual = vouches?.mutual?.data?.length || 0;
+  const received = profile.stats?.vouch?.received?.count || 0;
+  if (mutual < 3) return `You have ${mutual} mutual vouches. Find builders you've worked with and start 3,3 vouch chains — each one directly boosts both scores.`;
+  if (received < 10) return `${received} vouches received so far. Target builders with scores above ${profile.score} — their vouches carry more weight and lift your score faster.`;
+  return `Strong vouch network at ${received} received. Expand into new ecosystems — vouching across communities multiplies your influence factor.`;
+}
+
+function generateVouchROI(profile: any, vouches: any): string {
+  if (!profile) return "";
+  const mutual = vouches?.mutual?.data?.length || 0;
+  const given = profile.stats?.vouch?.given?.count || 0;
+  const received = profile.stats?.vouch?.received?.count || 0;
+  const ratio = given > 0 ? (received / given).toFixed(1) : "N/A";
+  return `You've given ${given} vouches, received ${received}. Return ratio: ${ratio}x. Mutual (3,3) vouches: ${mutual}. Your top ROI move: convert one-way vouches to mutual.`;
+}
+
+function generateSimulator(profile: any): string {
+  if (!profile) return "";
+  const score = profile.score;
+  const nextTier = score < 800 ? { name: "Neutral", target: 800 } :
+    score < 1200 ? { name: "Known", target: 1200 } :
+    score < 1600 ? { name: "Established", target: 1600 } :
+    score < 2000 ? { name: "Reputable", target: 2000 } :
+    score < 2400 ? { name: "Exemplary", target: 2400 } : null;
+  if (!nextTier) return `You've reached the top tier — Exemplary. Maintain it by staying active and keeping vouches healthy.`;
+  const gap = nextTier.target - score;
+  const vouchesNeeded = Math.ceil(gap / 50);
+  const reviewsNeeded = Math.ceil(gap / 30);
+  return `${gap} points to ${nextTier.name}. Estimated paths: ${vouchesNeeded} new vouches OR ${reviewsNeeded} positive reviews from credible wallets.`;
+}
+
 /* ─── Main component ────────────────────────────────────────────── */
 export default function AppPage() {
   const { ready, authenticated, user, login, logout } = usePrivy();
@@ -332,6 +402,15 @@ export default function AppPage() {
   const [trialSuccess, setTrialSuccess] = useState(false);
 
   const walletAddress = user?.wallet?.address;
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = searchQuery.trim();
+    if (!q) return;
+    router.push(`/profile/${encodeURIComponent(q)}`);
+  };
 
   const fetchEthosData = useCallback(async (address: string) => {
     setLoading(true);
@@ -544,6 +623,9 @@ export default function AppPage() {
         score={profile?.score}
         login={login}
         logout={logout}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        handleSearch={handleSearch}
       />
 
       <main
@@ -1090,7 +1172,64 @@ export default function AppPage() {
               )}
             </div>
 
-            {/* ── Section E: Upgrade Gate ── */}
+            {/* ── Section E: Core Features ── */}
+            <div style={{ marginTop: 24 }}>
+              <p style={{ margin: "0 0 12px", fontSize: 11, fontWeight: 700, color: MUTED2, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                Core Features {userPlan === "free" && <span style={{ color: "#F59E0B", marginLeft: 6 }}>— Locked</span>}
+                {(userPlan === "core" || userPlan === "trial") && <span style={{ color: "#00FF94", marginLeft: 6 }}>— Active</span>}
+              </p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
+                {[
+                  {
+                    title: "Weekly Brief",
+                    icon: "📋",
+                    desc: userPlan === "free" ? "Your reputation summary, delivered weekly." : generateWeeklyBrief(profile),
+                    locked: userPlan === "free",
+                  },
+                  {
+                    title: "Reputation Matchmaker",
+                    icon: "🤝",
+                    desc: userPlan === "free" ? "Find wallets you should vouch with." : generateMatchmaker(profile, vouches),
+                    locked: userPlan === "free",
+                  },
+                  {
+                    title: "Vouch ROI",
+                    icon: "📈",
+                    desc: userPlan === "free" ? "See which vouches are helping your score most." : generateVouchROI(profile, vouches),
+                    locked: userPlan === "free",
+                  },
+                  {
+                    title: "Score Simulator",
+                    icon: "🎯",
+                    desc: userPlan === "free" ? "Simulate what improves your score." : generateSimulator(profile),
+                    locked: userPlan === "free",
+                  },
+                ].map(({ title, icon, desc, locked }) => (
+                  <div key={title} style={{
+                    background: locked ? "#0D0D0D" : SURFACE,
+                    border: `1px solid ${locked ? BORDER : "rgba(77,142,255,0.2)"}`,
+                    borderRadius: 12,
+                    padding: "16px 18px",
+                    position: "relative",
+                    overflow: "hidden",
+                  }}>
+                    {locked && (
+                      <div style={{ position: "absolute", inset: 0, backdropFilter: "blur(3px)", background: "rgba(10,10,10,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}>
+                        <div style={{ textAlign: "center" }}>
+                          <div style={{ fontSize: 20, marginBottom: 4 }}>🔒</div>
+                          <p style={{ margin: 0, fontSize: 11, color: MUTED2, fontWeight: 600 }}>Core only</p>
+                        </div>
+                      </div>
+                    )}
+                    <div style={{ fontSize: 18, marginBottom: 6 }}>{icon}</div>
+                    <p style={{ margin: "0 0 4px", fontSize: 13, fontWeight: 700, color: locked ? MUTED : "#fff" }}>{title}</p>
+                    <p style={{ margin: 0, fontSize: 12, color: MUTED2, lineHeight: "1.5" }}>{desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ── Section F: Upgrade Gate ── */}
             {userPlan === "free" && (
               <div
                 className="card-anim-5"

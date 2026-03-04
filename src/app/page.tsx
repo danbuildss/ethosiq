@@ -489,6 +489,27 @@ function Hero() {
             </a>
           </div>
 
+          <form onSubmit={(e) => { e.preventDefault(); const q = (e.currentTarget.elements.namedItem("q") as HTMLInputElement).value.trim(); if (q) window.location.href = `/profile/${encodeURIComponent(q)}`; }} style={{ display: "flex", gap: 8, marginTop: 16, justifyContent: "flex-start", flexWrap: "wrap" }}>
+            <input
+              name="q"
+              placeholder="Paste a wallet address or ENS to look up"
+              style={{
+                background: "#111",
+                border: "1px solid #2A2A2A",
+                borderRadius: 8,
+                color: "#fff",
+                padding: "10px 16px",
+                fontSize: 14,
+                outline: "none",
+                width: 320,
+                maxWidth: "100%",
+              }}
+            />
+            <button type="submit" style={{ background: "#4D8EFF", border: "none", borderRadius: 8, padding: "10px 20px", cursor: "pointer", color: "#fff", fontSize: 14, fontWeight: 600 }}>
+              Look Up
+            </button>
+          </form>
+
           <p style={{ fontSize: 12, color: MUTED2, marginTop: 16 }}>
             No credit card. Connects with your existing wallet.
           </p>
