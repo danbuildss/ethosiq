@@ -84,13 +84,19 @@ export default function ProfilePage() {
           <div className="fade">
             {/* Profile header */}
             <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 16, padding: 28, marginBottom: 16, display: "flex", gap: 20, alignItems: "flex-start" }}>
-              {profile.avatarUrl ? (
-                <img src={profile.avatarUrl} alt={name} style={{ width: 64, height: 64, borderRadius: "50%", objectFit: "cover", border: `2px solid rgba(77,142,255,0.3)`, flexShrink: 0 }} />
-              ) : (
-                <div style={{ width: 64, height: 64, borderRadius: "50%", background: `linear-gradient(135deg, ${BLUE}, #7C3AED)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 700, flexShrink: 0 }}>
-                  {name[0]?.toUpperCase()}
-                </div>
-              )}
+              {(() => {
+                const avatarSrc = profile.avatarUrl
+                  || (profile.twitterHandle ? `https://unavatar.io/twitter/${profile.twitterHandle}` : null);
+                return avatarSrc ? (
+                  <img src={avatarSrc} alt={name}
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                    style={{ width: 64, height: 64, borderRadius: "50%", objectFit: "cover", border: `2px solid rgba(77,142,255,0.3)`, flexShrink: 0 }} />
+                ) : (
+                  <div style={{ width: 64, height: 64, borderRadius: "50%", background: `linear-gradient(135deg, ${BLUE}, #7C3AED)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 700, flexShrink: 0 }}>
+                    {name[0]?.toUpperCase()}
+                  </div>
+                );
+              })()}
               <div style={{ flex: 1 }}>
                 <h1 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 800 }}>{name}</h1>
                 {profile.description && <p style={{ margin: "0 0 10px", fontSize: 13, color: MUTED, lineHeight: "1.5" }}>{profile.description}</p>}

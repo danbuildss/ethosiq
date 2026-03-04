@@ -795,39 +795,44 @@ export default function AppPage() {
               {/* Left: Identity */}
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, minWidth: 100 }}>
                 {/* Avatar */}
-                {profile.avatarUrl ? (
-                  <img
-                    src={profile.avatarUrl}
-                    alt={name}
-                    style={{
-                      width: 64,
-                      height: 64,
-                      borderRadius: "50%",
-                      objectFit: "cover",
-                      border: "2px solid rgba(77,142,255,0.3)",
-                      flexShrink: 0,
-                    }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      width: 64,
-                      height: 64,
-                      borderRadius: "50%",
-                      background: gradient,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontWeight: 800,
-                      fontSize: 24,
-                      color: "#fff",
-                      border: "2px solid rgba(255,255,255,0.08)",
-                      flexShrink: 0,
-                    }}
-                  >
-                    {name[0].toUpperCase()}
-                  </div>
-                )}
+                {(() => {
+                  const avatarSrc = profile.avatarUrl
+                    || (profile.twitterHandle ? `https://unavatar.io/twitter/${profile.twitterHandle}` : null);
+                  return avatarSrc ? (
+                    <img
+                      src={avatarSrc}
+                      alt={name}
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                      style={{
+                        width: 64,
+                        height: 64,
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                        border: "2px solid rgba(77,142,255,0.3)",
+                        flexShrink: 0,
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: 64,
+                        height: 64,
+                        borderRadius: "50%",
+                        background: gradient,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontWeight: 800,
+                        fontSize: 24,
+                        color: "#fff",
+                        border: "2px solid rgba(255,255,255,0.08)",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {name[0].toUpperCase()}
+                    </div>
+                  );
+                })()}
                 <div style={{ textAlign: "center" }}>
                   <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 4 }}>{name}</div>
                   {profile.username && profile.username !== name && (
