@@ -1551,7 +1551,7 @@ function Footer() {
         </div>
         <div style={{ textAlign: "center" }}>
           <p style={{ fontSize: 13, color: MUTED2 }}>
-            &copy; {new Date().getFullYear()} EthosIQ. Not affiliated with Ethos Protocol.
+            &copy; {new Date().getFullYear()} EthosIQ. Not affiliated with Ethos Network.
           </p>
           <p style={{ fontSize: 13, color: MUTED2, marginTop: 4 }}>
             Built by{" "}

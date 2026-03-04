@@ -13,10 +13,10 @@ export default function PrivyProvider({
       config={{
         appearance: {
           theme: "dark",
-          accentColor: "#3B82F6",
+          accentColor: "#4D8EFF",
           logo: undefined,
         },
-        loginMethods: ["wallet"],
+        loginMethods: ["wallet", "email", "twitter"],
         embeddedWallets: {
           ethereum: {
             createOnLogin: "off",
