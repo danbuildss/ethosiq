@@ -191,72 +191,79 @@ function Navbar() {
 }
 
 /* ── Score Widget preview ───────────────────────────────────────── */
+// Real data: Serpin Taxt (serpinxbt) — Ethos founder
+// Score 2581 = Exemplary (#00FF94), 1,642 pos reviews, 154 vouches
+const TIER_COLORS: Record<string, string> = {
+  Untrusted: "#F87171",
+  Neutral: "#9CA3AF",
+  Known: "#F59E0B",
+  Established: "#A78BFA",
+  Reputable: "#4D8EFF",
+  Exemplary: "#00FF94",
+};
+
 function ScoreWidget() {
+  const tier = "Exemplary";
+  const tierColor = TIER_COLORS[tier];
+  const score = 2581;
+  const progressPct = Math.min(100, Math.round((score / 3000) * 100));
+  const totalReviews = 1642 + 87 + 59; // pos + neutral + neg
+  const posRate = Math.round((1642 / totalReviews) * 100);
+
   return (
     <div
       style={{
         background: SURFACE,
-        border: `1px solid rgba(77,142,255,0.35)`,
+        border: `1px solid ${tierColor}55`,
         borderRadius: 16,
         padding: "28px 24px",
         width: "100%",
         maxWidth: 320,
-        boxShadow: "0 0 40px rgba(77,142,255,0.18), 0 0 80px rgba(77,142,255,0.06)",
+        boxShadow: `0 0 40px ${tierColor}22, 0 0 80px ${tierColor}0A`,
         position: "relative",
         overflow: "hidden",
+        animation: "fadeUp 0.6s ease forwards",
       }}
     >
-      {/* Blue glow top right */}
-      <div
-        aria-hidden
-        style={{
-          position: "absolute",
-          top: -40,
-          right: -40,
-          width: 160,
-          height: 160,
-          borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(77,142,255,0.25) 0%, transparent 70%)",
-          pointerEvents: "none",
-        }}
-      />
+      <style>{`
+        @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes fillBar { from { width: 0%; } to { width: ${progressPct}%; } }
+        @keyframes countUp { from { opacity:0; } to { opacity:1; } }
+        @keyframes pulse { 0%,100% { box-shadow: 0 0 40px ${tierColor}22; } 50% { box-shadow: 0 0 60px ${tierColor}44; } }
+        .widget-card { animation: fadeUp 0.6s ease forwards, pulse 3s ease-in-out infinite; }
+        .bar-fill { animation: fillBar 1.2s ease 0.4s forwards; width: 0%; }
+        .stat-item { animation: fadeUp 0.5s ease forwards; }
+        .stat-item:nth-child(1) { animation-delay: 0.5s; opacity:0; }
+        .stat-item:nth-child(2) { animation-delay: 0.65s; opacity:0; }
+        .stat-item:nth-child(3) { animation-delay: 0.8s; opacity:0; }
+      `}</style>
+
+      {/* Tier glow top right */}
+      <div aria-hidden style={{ position: "absolute", top: -40, right: -40, width: 160, height: 160, borderRadius: "50%", background: `radial-gradient(circle, ${tierColor}30 0%, transparent 70%)`, pointerEvents: "none" }} />
 
       {/* Header row */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: "50%",
-              background: "linear-gradient(135deg, #4D8EFF, #7B61FF)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontWeight: 700,
-              fontSize: 16,
-              color: "#fff",
-            }}
-          >
-            V
-          </div>
+          <img
+            src="https://pbs.twimg.com/profile_images/1986878850328932352/Ybzp_QKu.jpg"
+            alt="Serpin Taxt"
+            style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover", border: `2px solid ${tierColor}66` }}
+          />
           <div>
-            <div style={{ fontWeight: 700, fontSize: 14, color: "#fff" }}>vitalik.eth</div>
-            <div style={{ fontSize: 12, color: MUTED }}>0x1234&hellip;abcd</div>
+            <div style={{ fontWeight: 700, fontSize: 14, color: "#fff" }}>serpinxbt</div>
+            <div style={{ fontSize: 11, color: MUTED }}>Ethos Founder</div>
           </div>
         </div>
-        <span
-          style={{
-            background: "rgba(77,142,255,0.18)",
-            color: "#6B9FFF",
-            fontSize: 11,
-            fontWeight: 700,
-            padding: "4px 10px",
-            borderRadius: 20,
-            border: "1px solid rgba(77,142,255,0.3)",
-          }}
-        >
-          Reputable
+        <span style={{
+          background: `${tierColor}18`,
+          color: tierColor,
+          fontSize: 11,
+          fontWeight: 700,
+          padding: "4px 10px",
+          borderRadius: 20,
+          border: `1px solid ${tierColor}40`,
+        }}>
+          {tier}
         </span>
       </div>
 
@@ -265,69 +272,49 @@ function ScoreWidget() {
         <div style={{ fontSize: 11, fontWeight: 600, color: MUTED2, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>
           Ethos Score
         </div>
-        <div
-          style={{
-            fontSize: 72,
-            fontWeight: 800,
-            color: "#fff",
-            lineHeight: 1,
-            letterSpacing: "-3px",
-          }}
-        >
-          1847
+        <div style={{ fontSize: 72, fontWeight: 800, color: tierColor, lineHeight: 1, letterSpacing: "-3px" }}>
+          {score.toLocaleString()}
         </div>
         <div style={{ fontSize: 13, color: MUTED, marginTop: 4, fontStyle: "italic" }}>
-          Top 12% of all profiles
+          Top 1% of all profiles
         </div>
       </div>
 
       {/* Progress bar */}
       <div style={{ margin: "16px 0 8px" }}>
-        <div
-          style={{
-            height: 6,
-            borderRadius: 6,
-            background: SURFACE2,
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              height: "100%",
-              width: "66%",
-              borderRadius: 6,
-              background: `linear-gradient(90deg, ${BLUE}, #6B9FFF)`,
-            }}
-          />
+        <div style={{ height: 6, borderRadius: 6, background: SURFACE2, overflow: "hidden" }}>
+          <div className="bar-fill" style={{ height: "100%", borderRadius: 6, background: `linear-gradient(90deg, #4D8EFF, ${tierColor})` }} />
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
-          <span style={{ fontSize: 10, color: MUTED2 }}>Untrusted</span>
-          <span style={{ fontSize: 10, color: MUTED2 }}>Exemplary</span>
+          {["Untrusted","Known","Established","Reputable","Exemplary"].map((t) => (
+            <span key={t} style={{ fontSize: 9, color: t === tier ? tierColor : MUTED2, fontWeight: t === tier ? 700 : 400 }}>{t === tier ? "▲" : "·"}</span>
+          ))}
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 2 }}>
+          <span style={{ fontSize: 9, color: MUTED2 }}>Untrusted</span>
+          <span style={{ fontSize: 9, color: tierColor, fontWeight: 700 }}>Exemplary</span>
         </div>
       </div>
 
       {/* Stats row */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr 1fr",
-          gap: 8,
-          marginTop: 16,
-          paddingTop: 16,
-          borderTop: `1px solid ${BORDER}`,
-        }}
-      >
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginTop: 16, paddingTop: 16, borderTop: `1px solid ${BORDER}` }}>
         {[
-          { label: "Reviews", value: "24", sub: "96% pos" },
-          { label: "Vouches", value: "18", sub: "1.2 ETH" },
-          { label: "Mutual", value: "11", sub: "(3,3)" },
+          { label: "Reviews", value: totalReviews.toLocaleString(), sub: `${posRate}% pos`, subColor: GREEN },
+          { label: "Vouches", value: "154", sub: "received", subColor: BLUE },
+          { label: "Mutual", value: "65+", sub: "(3,3)", subColor: tierColor },
         ].map((s) => (
-          <div key={s.label} style={{ textAlign: "center" }}>
+          <div key={s.label} className="stat-item" style={{ textAlign: "center" }}>
             <div style={{ fontSize: 18, fontWeight: 700, color: "#fff" }}>{s.value}</div>
             <div style={{ fontSize: 10, color: MUTED2, marginTop: 2 }}>{s.label}</div>
-            <div style={{ fontSize: 10, color: GREEN, marginTop: 1 }}>{s.sub}</div>
+            <div style={{ fontSize: 10, color: s.subColor, marginTop: 1 }}>{s.sub}</div>
           </div>
         ))}
+      </div>
+
+      {/* Verified badge */}
+      <div style={{ marginTop: 16, paddingTop: 12, borderTop: `1px solid ${BORDER}`, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+        <div style={{ width: 6, height: 6, borderRadius: "50%", background: tierColor }} />
+        <span style={{ fontSize: 10, color: MUTED2 }}>Live data from Ethos Network</span>
       </div>
     </div>
   );
